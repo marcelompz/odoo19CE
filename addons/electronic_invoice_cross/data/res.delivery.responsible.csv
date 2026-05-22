@@ -1,0 +1,6 @@
+"id","code","name"
+"rdr_001","1","Emisor de la factura"
+"rdr_002","2","Poseedor de la factura y bienes"
+"rdr_003","3","Empresa transportista"
+"rdr_004","4","Despachante de Aduanas"
+"rdr_005","5","Agente de transporte o intermediario"

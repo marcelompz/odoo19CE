@@ -1,0 +1,6 @@
+db-data/
+web-data/
+ssh_debug.log
+.env
+__pycache__/
+*.pyc

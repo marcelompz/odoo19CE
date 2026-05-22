@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Account Tags -->
+    <!-- Account Taxes Tags Ventas -->
+    <record id="tag_py_sale_mnt_exe" model="account.account.tag">
+        <!-- TotMntExe -->
+        <field name="name">Anexo Exp. - Cas. 201 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 10% relacionados indistintamente a operaciones exoneradas o no alcanzadas y fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_sale_mnt_neto" model="account.account.tag">
+        <!-- TotMntNeto -->
+        <field name="name">Rubro 1 - Inc. d - Cas. 12 Enajenación de bienes y/o prestación de servicios exoneradas o no alcanzadas por el impuesto, incluidos los servicios digitales prestados para el exterior.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_sale_valor_neto_comis" model="account.account.tag">
+        <!-- TotValComNeto -->
+        <field name="name">Rubro 1 - Inc. g - Cas. 14 Exportación de otros bienes no incluidos en las casillas 152 y 153.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_sale_valor_comisiones_no_afecto" model="account.account.tag">
+        <!-- TotValComExe -->
+        <field name="name">Rubro 1 - Inc. i - Cas. 158 Ajustes de precios, devoluciones realizadas y desc. obtenidos, por las adquisiciones de prod. agrícolas en estado natural y sus derivados del 1er proceso de elaboración (IVA Débito al 5%)</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_sale_monto_no_facturable" model="account.account.tag">
+        <!-- TotMntNoFact -->
+        <field name="name">Rubro 1 - Inc. j - Cas. 159 Ajustes de precios, devoluciones realizadas y descuentos obtenidos, por las adquisiciones de otros bienes y servicios no señalados en el inciso i, gravadas con IVA Crédito al 5% (IVA Débito al 5%)</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_sale_exento_vta_pasajes_nacional" model="account.account.tag">
+        <!-- TotPsjNac -->
+        <field name="name">Rubro 5 - Inc. d - Cas. 169 Importe de las percepciones que le fueron aplicadas a los despachantes de aduanas durante el período fiscal que se declara También se considerará en este campo otras percepciones que la SET reglamente</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_sale_exento_vta_pasajes_internacional" model="account.account.tag">
+        <!-- TotPsjInt -->
+        <field name="name">Anexo Exp. - Cas. 171 Monto imponible por la adquisición de productos agrícolas en estado natural gravados a la tasa del 5%, relacionados directamente con la exportación de productos agrícolas en estado natural.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <!-- Account Taxes Tags Commpras -->
+    <record id="tag_py_purchase_mnt_exe" model="account.account.tag">
+        <!-- TotMntExe -->
+        <field name="name">Rubro 1 - Inc. c - Cas. 157 Enajenación de otros bienes y/o prestación de servicios gravados con tasa del 5% ( Enajenación de otros bienes y/o prestación de servicios gravados con tasa del 5% (IVA Débito al 5%))</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_purchase_mnt_neto" model="account.account.tag">
+        <!-- TotMntNeto -->
+        <field name="name">Anexo Exp. - Cas. 172 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 5% relacionados directamente con la exportación de otros bienes.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_purchase_mnt_neto_uso_comun" model="account.account.tag">
+        <!-- TotMntNeto -->
+        <field name="name">Anexo Exp. - Cas. 175 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 5% relacionados indistintamente a operaciones exoneradas o no alcanzadas y exportaciones.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_purchase_mnt_neto_no_recup" model="account.account.tag">
+        <!-- TotMntNeto -->
+        <field name="name">Anexo Exp. - Cas. 177 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 10% relacionados directamente con la exportación de otros bienes.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_purchase_mnt_neto_supermercado" model="account.account.tag">
+        <!-- TotMntNeto -->
+        <field name="name">Anexo Exp. - Cas. 179 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 10% relacionados indistintamente a operaciones exoneradas o no alcanzadas y exportaciones.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+
+    <record id="tag_py_purchase_mnt_neto_actf" model="account.account.tag">
+        <!-- TotMntActivoFijo -->
+        <field name="name">Compras - Total Monto Neto Activo Fijo</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+
+    <record id="tag_py_purchase_tab_puros" model="account.account.tag">
+        <!-- TotTabPuros -->
+        <field name="name">Anexo Exp. - Cas. 188 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 5% relacionados indistintamente a operaciones gravadas, exoneradas o no alcanzadas, exportaciones y a fletes de export</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_purchase_tab_cigar" model="account.account.tag">
+        <!-- TotTabCigarrillos -->
+        <field name="name">Anexo Exp. - Cas. 191 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 5% relacionados indistintamente a operaciones exoneradas o no alcanzadas, exportaciones y fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_purchase_tab_elab" model="account.account.tag">
+        <!-- TotTabCigarrillos -->
+        <field name="name">Anexo Exp. - Cas. 194 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 5% relacionados indistintamente a exportaciones y fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_remanente_cf" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 196 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 10% relacionados indistintamente a operaciones gravadas, exoneradas o no alcanzadas, exportaciones y a fletes de expor</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_impuesto_unico_trabajadores" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 199 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 10% relacionados indistintamente a operaciones exoneradas o no alcanzadas, exportaciones y fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount1" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 202 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 10% relacionados indistintamente a exportaciones y fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount2" model="account.account.tag">
+        <field name="name">Rubro 1 - Inc. c - Cas. 151 Enajenación de otros bienes y/o prestación de servicios gravados con tasa del 5% (Monto imponible)</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_152" model="account.account.tag">
+        <field name="name">Rubro 1 - Inc. d - Cas. 152 Exportación de productos agrícolas en estado natural incluidos los derivados del primer proceso de elaboración o industrialización, tales como la elaboración de harinas, de aceites crudos...</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_156" model="account.account.tag">
+        <field name="name">Rubro 1 - Inc. b - Cas. 156 Enajenación de productos agrícolas en estado natural y sus derivados del primer proceso de elaboración o industrialización gravados con tasa del 5% (IVA Débito al 5%)</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_154" model="account.account.tag">
+        <field name="name">Rubro 1 - Inc. i - Cas. 154 Ajustes de precios, devoluciones realizadas y desc. obtenidos, por las adquisiciones de prod. agrícolas en estado natural y sus derivados del 1er proceso de elaboración (Monto imponible)</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_155" model="account.account.tag">
+        <field name="name">Rubro 1 - Inc. j - Cas. 155 Ajustes de precios, devoluciones realizadas y descuentos obtenidos, por las adquisiciones de otros bienes y servicios no señalados en el inciso i, gravadas con IVA Crédito al 5% (Monto imponible)</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_173" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 173 Monto imponible por la adquisición de productos agrícolas en estado natural gravados a la tasa del 5%, relacionados indistintamente con la enajenación en el mercado interno y con la exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_150" model="account.account.tag">
+        <field name="name">Rubro 1 - Inc. b - Cas. 150 Enajenación de productos agrícolas en estado natural y sus derivados del primer proceso de elaboración o industrialización gravados con tasa del 5% (Monto imponible)</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_194" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 195 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 10% relacionados directamente a fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_195" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 195 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 10% relacionados directamente a fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_197" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 197 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 10% relacionados indistintamente a operaciones gravadas, exoneradas o no alcanzadas y a fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_198" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 198 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 10% relacionados indistintamente a operaciones gravadas en el mercado interno, exportaciones y fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_200" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 200 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 10% relacionados indistintamente a operaciones gravadas en el mercado interno y fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_1" model="account.account.tag">
+        <field name="name">Rubro 1 - Inc. a - Cas. 10 - Enajenación de bienes y/o prestación de servicios gravados con tasa del 10% (Monto imponible)</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_exp" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 176 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 5% relacionados indistintamente a operaciones gravadas en el mercado interno,y exportaciones.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_exp178" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 178 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 10% relacionados indistintamente a operaciones gravadas, exoneradas o no alcanzadas, a exportación de productos agríco</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_rubro1" model="account.account.tag">
+        <field name="name">Rubro 1 - Inc. h - Cas. 15 Ajustes de precios, devoluciones realizadas y descuentos obtenidos, por compras gravadas con IVA Crédito al 10%, así como el recupero de impuestos por operaciones incobrables. (Monto imponible)</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount" model="account.account.tag">
+        <field name="name">Rubro 1 - Inc. k - Cas. 17 Ajustes de precios, devoluciones realizadas, descuentos obtenidos y recupero por operaciones incobrables, exonerados o no alcanzados por el Impuesto.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount2" model="account.account.tag">
+        <field name="name">Rubro 1 - Inc. a - Cas. 22 Enajenación de bienes y/o prestación de servicios gravados con tasa del 10% (IVA Deb. al 10%)</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount3" model="account.account.tag">
+        <field name="name">ización, tales como la elaboración de harinas, de aceites crudos...</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount4" model="account.account.tag">
+        <field name="name">Rubro 1 - Inc. h - Cas. 23 Ajustes de precios, devoluciones realizadas y descuentos obtenidos, por compras gravadas con IVA Crédito al 10%, así como el recupero de impuestos por operaciones incobrables. (IVA Débito al 10%)</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount5" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 187 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 5% relacionados directamente a fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount6" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 189 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 5% relacionados indistintamente a operaciones gravadas, exoneradas o no alcanzadas y a fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount7" model="account.account.tag">
+        <field name="name">Rubro 3 - Inc. a - Cas. 32 Monto imponible por compras gravadas a la tasa del 5% atribuidas en forma directa a operaciones gravadas en el mercado interno.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount8" model="account.account.tag">
+        <field name="name">Rubro 3 - Inc. b - Cas. 33 Monto imponible por compras gravadas a la tasa del 5% atribuidas en forma indistinta a operaciones gravadas, exoneradas o no alcanzadas por el impuesto.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount9" model="account.account.tag">
+        <field name="name">Rubro 3 - Inc. e - Cas. 34 IVA Crédito por ajustes de precios, devoluciones y descuentos otorgados, por ventas ya declaradas y operaciones declaradas incobrables a la tasa del 5%.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amoun" model="account.account.tag">
+        <field name="name">Rubro 3 - Inc. a - Cas. 35 Monto imponible por compras gravadas a la tasa del 10% atribuidas en forma directa a operaciones gravadas en el mercado interno.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amoun1" model="account.account.tag">
+        <field name="name">Rubro 3 - Inc. e - Cas. 37 IVA Crédito por ajustes de precios, devoluciones y descuentos otorgados, por ventas ya declaradas y operaciones declaradas incobrables a la tasa del 10%.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount174" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 174 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 5% relacionados indistintamente a operaciones gravadas, exoneradas o no alcanzadas y exportaciones.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount22" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 180 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 10% relacionados indistintamente a operaciones gravadas en el mercado interno,y exportaciones.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount23" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 190 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 5% relacionados indistintamente a operaciones gravadas en el mercado interno, exportaciones y fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount24" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 192 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 5% relacionados indistintamente a operaciones gravadas en el mercado interno y fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+    <record id="tag_py_fees_amount25" model="account.account.tag">
+        <field name="name">Anexo Exp. - Cas. 193 Monto imponible por la adquisición de bienes y/o servicios gravados a la tasa del 5% relacionados indistintamente a operaciones exoneradas o no alcanzadas y fletes de exportación.</field>
+        <field name="applicability">accounts</field>
+    </record>
+
+</odoo>

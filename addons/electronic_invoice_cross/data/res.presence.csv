@@ -1,0 +1,8 @@
+"id","name","presence_id"
+"l10n_py_op","Operación presencial","1"
+"l10n_py_oe","Operación electrónica","2"
+"l10n_py_ot","Operación telemarketing","3"
+"l10n_py_vdo","Venta a domicilio","4"
+"l10n_py_ob","Operación bancaria","5"
+"l10n_py_oc","Operación cíclica","6"
+"l10n_py_oth","Otro","9"

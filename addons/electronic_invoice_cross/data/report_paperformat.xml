@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Create on 2024-06-06 15:47:02
+    @author: drojo
+-->
+<odoo>
+
+    <data noupdate="1">
+    
+        <!-- se crea la hoja con la configuracion correspondiente -->
+        <record id="paperformat_folio_invoice_preprinted" model="report.paperformat">
+            <field name="name">Factura Preimpresa</field>
+            <field name="default" eval="False" />
+            <field name="format">Folio</field>
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">0</field>
+            <field name="margin_bottom">0</field>
+            <field name="margin_left">0</field>
+            <field name="margin_right">0</field>
+            <field name="dpi">90</field>
+            <field name="header_line" eval="False" />
+            <field name="header_spacing">0</field>
+        </record>
+    
+    </data>
+    
+
+</odoo>

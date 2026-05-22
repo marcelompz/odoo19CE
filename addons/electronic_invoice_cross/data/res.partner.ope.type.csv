@@ -1,0 +1,5 @@
+"operation_id","name","operation_description"
+"1","B2B","Business to Business"
+"3","B2G","Business to Goverment"
+"4","B2F","Business to Foreign"
+"2","B2C","Business to Consumer"

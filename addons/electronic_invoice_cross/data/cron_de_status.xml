@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Create on 2025-02-21 23:04:55
+    @author: drojo
+-->
+<odoo>
+
+    <data noupdate="0">
+    
+        <record id="ir_cron_de_status" model="ir.cron">
+        
+            <field name="name">Factura electrónica: Verifica el estado de las facturas en la SET</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="nextcall" eval="(DateTime.now() + timedelta(minutes=5)).strftime('%Y-%m-%d %H:%M:%S')" />
+            <field name="model_id" ref="electronic_invoice_cross.model_account_move"/>
+            <field name="code">model.cron_action_de_status()</field>
+            <field name="state">code</field>
+            <field name="user_id" ref="base.user_admin" />
+            <field name="active" eval="True"/>
+            <field name="priority">5</field>
+
+        </record>
+    
+    </data>
+
+</odoo>

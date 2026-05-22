@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Create on 2025-02-21 23:12:31
+    @author: drojo
+-->
+<odoo>
+
+    <data noupdate="1">
+        <record id="cross_db_conect" model="res.partner.search.config">
+            <field name="db_name">postgres</field>
+            <field name="db_user">postgres</field>
+            <field name="db_pwd"></field>
+            <field name="db_host">127.0.0.1</field>
+            <field name="db_port">5432</field>
+        </record>
+    </data>
+
+</odoo>

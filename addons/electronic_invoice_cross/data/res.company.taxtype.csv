@@ -1,0 +1,6 @@
+"id","name","taxtype_id"
+"l10n_py_iva","IVA","1"
+"l10n_py_isc","ISC","2"
+"l10n_py_renta","Renta","3"
+"l10n_py_ninguno","Ninguno","4"
+"l10n_py_ivarenta","IVA - Renta","5"
