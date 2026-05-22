@@ -1,0 +1,6 @@
+"id","position_id","account_src_id","account_dest_id"
+"afp_py_egr_acc","afp_py_egr","cross_account_41002","cross_account_406"
+"afp_py_caf_acc","afp_py_caf","cross_account_41001","cross_account_1020301"
+"afp_py_ce_acc","afp_py_ce","cross_account_41001","cross_account_41002"
+"afp_py_cs_acc","afp_py_cs","cross_account_41001","cross_account_4100103"
+"afp_py_ve_acc","afp_py_ve","cross_account_3010101","cross_account_3010102"
