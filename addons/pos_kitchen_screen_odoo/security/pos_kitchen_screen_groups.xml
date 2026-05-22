@@ -9,7 +9,5 @@
 
     <record id="kitchen_cook" model="res.groups">
         <field name="name">Kitchen Cook</field>
-        <field name="category_id"
-               ref="pos_kitchen_screen_odoo.module_category_pos_kitchen_screen_odoo"/>
     </record>
 </odoo>
