@@ -13,7 +13,7 @@
         <field name="inherit_id" ref="base.view_partner_form" />
         <field name="arch" type="xml">
 
-            <xpath expr="//div[hasclass('oe_title')]" position="after">
+            <xpath expr="//sheet/group[1]" position="before">
                 <group>
                     <group>
                         <field name="partner_code" readonly="1"/>
