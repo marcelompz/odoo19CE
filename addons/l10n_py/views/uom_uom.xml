@@ -25,7 +25,7 @@
         <field name="model">uom.uom</field>
         <field name="inherit_id" ref="uom.product_uom_form_view" />
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='rounding']" position="after">
+            <xpath expr="//field[@name='name']" position="after">
                 <field name="code"/>
             </xpath>
         </field>
