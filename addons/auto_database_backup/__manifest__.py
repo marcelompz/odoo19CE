@@ -3,7 +3,7 @@
 #
 #    Cybrosys Technologies Pvt. Ltd.
 #
-#    Copyright (C) 2024-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
+#    Copyright (C) 2025-TODAY Cybrosys Technologies(<https://www.cybrosys.com>)
 #    Author: Cybrosys Techno Solutions (odoo@cybrosys.com)
 #
 #    You can modify it under the terms of the GNU LESSER
@@ -22,7 +22,7 @@
 {
     'name': "Automatic Database Backup To Local Server, Remote Server,"
             "Google Drive, Dropbox, Onedrive, Nextcloud and Amazon S3 Odoo19",
-    'version': '19.0.2.0.0',
+    'version': '19.0.1.0.0',
     'live_test_url': 'https://youtu.be/Q2yMZyYjuTI',
     'category': 'Extra Tools',
     'summary': 'Odoo Database Backup, Automatic Backup, Database Backup, Automatic Backup,Database auto-backup, odoo backup'
