@@ -62,12 +62,12 @@ class ResPartnerInherit(models.Model):
         """
         self.country_id = self.state_id.country_id
 
-    @api.depends('l10n_latam_identification_type_id', 'vat', 'name', 'street', 'house_number', 'state_id', 'district_id', 'city_id', 'country_id', 'phone', 'mobile', 'email', 'partner_code')
+    @api.depends('l10n_latam_identification_type_id', 'vat', 'name', 'street', 'house_number', 'state_id', 'district_id', 'city_id', 'country_id', 'phone', 'email', 'partner_code')
     def _compute_client_eligible_de(self):
         for rec in self:
-            if rec.l10n_latam_identification_type_id and rec.vat and rec.name and rec.street and rec.house_number >= 0 and rec.state_id and rec.district_id and rec.city_id and rec.country_id and (rec.phone or rec.mobile) and rec.email and rec.partner_code:
+            mobile_val = getattr(rec, 'mobile', False)
+            if rec.l10n_latam_identification_type_id and rec.vat and rec.name and rec.street and rec.house_number >= 0 and rec.state_id and rec.district_id and rec.city_id and rec.country_id and (rec.phone or mobile_val) and rec.email and rec.partner_code:
                 rec.client_eligible_de = True
-
             else:
                 rec.client_eligible_de = False
 
