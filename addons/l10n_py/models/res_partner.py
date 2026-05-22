@@ -136,15 +136,17 @@ class ResPartnerInherit(models.Model):
         Valida el NIF de Paraguay, que puede ser un RUC (con dígito verificador)
         o una Cédula de Identidad (sin él).
         """
-        # 1. Limpiamos espacios en blanco al inicio y al final
         vat = vat.strip()
-
-        # 2. Decidimos si es RUC o CI
         if '-' in vat:
-            # Si tiene guion, asumimos que es un RUC e intentamos validarlo como tal
             return self._is_valid_paraguayan_ruc(vat)
         else:
-            # Si no tiene guion, asumimos que es una CI
+            # If Odoo stripped the hyphen, a RUC will be 9 digits long or more (body + 1 check digit)
+            # CI is typically 1 to 8 digits. Let's try validating as RUC if we can split the last digit.
+            if len(vat) > 8 and vat.isdigit():
+                # Reconstruct hyphen format to use existing RUC validator
+                reconstructed_vat = vat[:-1] + '-' + vat[-1]
+                if self._is_valid_paraguayan_ruc(reconstructed_vat):
+                    return True
             return self._is_valid_paraguayan_ci(vat)
 
     # Opcional pero recomendado: Mejorar el mensaje de error para ser más claro
