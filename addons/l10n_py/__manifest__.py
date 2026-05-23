@@ -10,7 +10,7 @@
     'license': 'OPL-1',
     'category': 'Accounting/Localizations/Account Charts',
     'countries': ['py'],
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.0.1',
     'icon': '/account/static/description/l10n.png',
     'depends': [
         'base',
