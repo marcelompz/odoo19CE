@@ -21,6 +21,8 @@ class AccountChartTemplate(models.AbstractModel):
     @template('py')
     def _get_py_template_data(self):
         return {
+            'name': _('Paraguay - Accounting'),
+            'visible': True,
             'code_digits': '2',
             'property_account_receivable_id': 'cross_account_1010301',
             'property_account_payable_id': 'cross_account_2010101',
