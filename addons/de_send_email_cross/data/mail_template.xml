@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Create on 2025-03-13 17:14:46
+    @author: drojo
+-->
+<odoo>
+
+    <data noupdate="1">
+    
+        <!-- Facturas -->
+        <record id="send_de_by_email_cross" model="mail.template">
+            <field name="name">Crossnexion: Envío de documento electrónica por email</field>
+            <field name="model_id" ref="electronic_invoice_cross.model_account_move"/>
+            <field name="email_from">{{ (object.de_email_formatted_send or object.invoice_user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="subject">{{ object.authorization_id.latam_doc_type_id.name }} {{ object.invoice_number }} emitida.!</field>
+            <field name="description">Envío de documento electrónico por email</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="body_html" type="html">
+                <div>
+                    <p>Apreciado <t t-out="object.partner_id.name"/></p>
+
+                    <p>La Empresa <t t-out="object.company_id.name"/> emitió una <t t-out="object.authorization_id.latam_doc_type_id.name"/>
+                    a nombre de <t t-out="object.partner_id.name"/> / R.U.C. <t t-out="object.partner_id.vat"/>, por una operación reciente realizada con el Emisor.</p>
+
+                    <p>En anexo encontrará el documento electrónico XML así como una copia del KUDE en formato PDF.</p>
+
+                    <p>Verifique su Factura y si tiene reclamos comuníquese con el emisor a los contactos:</p>
+
+                    <p><strong>Teléfono:</strong> <t t-out="object.company_id.phone"/><br/>
+                    <strong>Email:</strong> <t t-out="object.company_id.email"/></p>
+
+                    <p>--</p>
+                </div>
+            </field>
+        </record>
+
+        <!-- Notas de remision -->
+        <record id="send_nr_by_email_cross" model="mail.template">
+            <field name="name">Crossnexion: Envío de nota de remisión electrónica por email</field>
+            <field name="model_id" ref="electronic_invoice_cross.model_stock_picking"/>
+            <field name="email_from">{{ (object.de_email_formatted_send or object.invoice_user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="subject">{{ object.authorization_id.latam_doc_type_id.name }} {{ object.invoice_number }} emitida.!</field>
+            <field name="description">Envío de documento electrónico por email</field>
+            <field name="email_to">{{ object.partner_id.email }}</field>
+            <field name="body_html" type="html">
+                <div>
+                    <p>Apreciado <t t-out="object.partner_id.name"/></p>
+
+                    <p>La Empresa <t t-out="object.company_id.name"/> emitió una <t t-out="object.authorization_id.latam_doc_type_id.name"/>
+                    a nombre de <t t-out="object.partner_id.name"/> / R.U.C. <t t-out="object.partner_id.vat"/>, por una operación reciente realizada con el Emisor.</p>
+
+                    <p>En anexo encontrará el documento electrónico XML así como una copia del KUDE en formato PDF.</p>
+
+                    <p>Verifique su Factura y si tiene reclamos comuníquese con el emisor a los contactos:</p>
+
+                    <p><strong>Teléfono:</strong> <t t-out="object.company_id.phone"/><br/>
+                    <strong>Email:</strong> <t t-out="object.company_id.email"/></p>
+
+                    <p>--</p>
+                </div>
+            </field>
+        </record>
+    
+    </data>
+    
+
+</odoo>

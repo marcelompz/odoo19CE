@@ -1,0 +1,5 @@
+"id","name","description","amount","amount_type","type_tax_use","tax_group_id","price_include","include_base_amount","price_include_override"
+"ITAX_10","IVA 10% DF","IVA 10% DF","10","percent","sale","tax_group_iva_10","True","True","tax_included"
+"OTAX_10","IVA 10% CF","IVA 10% CF","10","percent","purchase","tax_group_iva_10","True","True","tax_included"
+"ITAX_05","IVA 5% DF","IVA 5% DF","5","percent","sale","tax_group_iva_05","True","True","tax_included"
+"OTAX_5","IVA 5% CF","IVA 5% CF","5","percent","purchase","tax_group_iva_05","True","True","tax_included"
