@@ -19,7 +19,7 @@ services:
       - PASSWORD=${DB_PASSWD}
       - TZ=America/Asuncion
       - DEBIAN_FRONTEND=noninteractive
-    restart: always
+    #restart: always
     logging:
       driver: json-file
       options:
@@ -39,7 +39,7 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - odoo-db-data:/var/lib/postgresql/data/pgdata
-    restart: always
+    #restart: always
 volumes:
   odoo-db-data:
     driver: local
