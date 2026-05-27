@@ -1,5 +1,5 @@
 /** @odoo-module **/
-import { PosStore } from "@point_of_sale/app/store/pos_store";
+import { PosStore } from "@point_of_sale/app/services/pos_store";
 import { patch } from "@web/core/utils/patch";
 import { AlertDialog } from "@web/core/confirmation_dialog/confirmation_dialog";
 import { _t } from "@web/core/l10n/translation";
@@ -11,7 +11,7 @@ import {
     makeAwaitable,
     ask,
     makeActionAwaitable,
-} from "@point_of_sale/app/store/make_awaitable_dialog";
+} from "@point_of_sale/app/utils/make_awaitable_dialog";
 
 
 /*
