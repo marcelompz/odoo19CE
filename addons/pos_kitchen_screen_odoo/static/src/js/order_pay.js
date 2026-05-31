@@ -26,9 +26,11 @@ patch(PosStore.prototype, {
 
     },
     async initServerData() {
-        await this.processServerData();
-        this.onNotified = getOnNotified(this.bus, this.config.access_token);
-        return await this.afterProcessServerData();
+        const result = await super.initServerData(...arguments);
+        if (this.bus) {
+            this.onNotified = getOnNotified(this.bus, this.config.access_token);
+        }
+        return result;
     },
     async pay() {
         let order_name = this.get_order().pos_reference;
