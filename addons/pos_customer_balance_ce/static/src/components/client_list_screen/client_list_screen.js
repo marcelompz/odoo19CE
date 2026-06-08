@@ -4,6 +4,7 @@ import { PartnerList } from "@point_of_sale/app/screens/partner_list/partner_lis
 import { patch } from "@web/core/utils/patch";
 import { onWillStart } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
+import { NumberPopup } from "@point_of_sale/app/components/popups/number_popup/number_popup";
 
 patch(PartnerList.prototype, {
     setup() {
@@ -39,6 +40,8 @@ patch(PartnerList.prototype, {
 
 });
 import { PartnerLine } from "@point_of_sale/app/screens/partner_list/partner_line/partner_line";
+import { NumberPopup } from "@point_of_sale/app/components/popups/number_popup/number_popup";
+import { makeAwaitable } from "@point_of_sale/app/utils/make_awaitable_dialog";
 
 patch(PartnerLine.prototype, {
     async settleCustomerAccount() {
@@ -50,6 +53,27 @@ patch(PartnerLine.prototype, {
             console.warn("Este cliente no tiene deuda pendiente para saldar.");
             return;
         }
+
+        let amountToPay = debt;
+
+        // Show a popup to allow the user to enter a specific amount
+        const payload = await makeAwaitable(this.env.services.dialog, NumberPopup, {
+            title: "Monto a Pagar",
+            startingValue: debt,
+            isInputSelected: true,
+        });
+
+        if (!payload) {
+            return; // cancelled
+        }
+
+        const inputAmount = parseFloat(payload);
+        if (isNaN(inputAmount) || inputAmount <= 0) {
+            console.warn("Monto inválido");
+            return;
+        }
+
+        amountToPay = inputAmount;
 
         const settle_due_product_id = this.pos.pos_session['pos_customer_balance_ce.product_id'];
         if (!settle_due_product_id) {
@@ -73,7 +97,7 @@ patch(PartnerLine.prototype, {
 
         await this.pos.addLineToCurrentOrder({
             product: product,
-            price: debt,
+            price: amountToPay,
             quantity: 1,
             merge: false,
         });
