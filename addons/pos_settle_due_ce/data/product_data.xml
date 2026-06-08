@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Generic Product for POS Settle Due -->
+        <record id="product_product_settle_due" model="product.product">
+            <field name="name">Abono de Cuenta</field>
+            <field name="type">service</field>
+            <field name="available_in_pos">True</field>
+            <field name="list_price">0.0</field>
+            <field name="taxes_id" eval="[(5, 0, 0)]"/>
+            <field name="supplier_taxes_id" eval="[(5, 0, 0)]"/>
+            <field name="default_code">PAGO_CUENTA</field>
+            <!-- We want to bypass normal accounting revenue if possible.
+                 But we will intercept it in Python anyway. -->
+        </record>
+    </data>
+</odoo>
