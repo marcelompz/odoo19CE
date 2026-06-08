@@ -10,8 +10,6 @@
             <field name="taxes_id" eval="[(5, 0, 0)]"/>
             <field name="supplier_taxes_id" eval="[(5, 0, 0)]"/>
             <field name="default_code">PAGO_CUENTA</field>
-            <!-- We want to bypass normal accounting revenue if possible.
-                 But we will intercept it in Python anyway. -->
         </record>
     </data>
 </odoo>

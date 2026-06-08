@@ -35,4 +35,45 @@ patch(PartnerList.prototype, {
     get isBalanceDisplayed() {
         return true;
     },
+
+    async settleCustomerAccount(partner) {
+        if (!partner) {
+            return;
+        }
+        
+        const debt = partner.outstanding_debt || 0;
+        if (debt <= 0) {
+            console.warn("Este cliente no tiene deuda pendiente para saldar.");
+            return;
+        }
+
+        const settle_due_product_id = this.pos.pos_session['pos_customer_balance_ce.product_id'];
+        if (!settle_due_product_id) {
+            console.error("No se encontró el producto de Settle Due.");
+            return;
+        }
+
+        const product = this.pos.models['product.product'].find(p => p.id === settle_due_product_id);
+        if (!product) {
+            console.error("Producto de Settle Due no está cargado en el TPV.");
+            return;
+        }
+
+        let order = this.pos.get_order();
+        if (!order || order.get_orderlines().length > 0) {
+            this.pos.add_new_order();
+            order = this.pos.get_order();
+        }
+
+        order.set_partner(partner);
+
+        await this.pos.addLineToCurrentOrder({
+            product: product,
+            price: debt,
+            quantity: 1,
+            merge: false,
+        });
+
+        this.pos.showScreen('PaymentScreen');
+    }
 });
