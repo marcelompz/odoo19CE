@@ -4,7 +4,6 @@ import { PartnerList } from "@point_of_sale/app/screens/partner_list/partner_lis
 import { patch } from "@web/core/utils/patch";
 import { onWillStart } from "@odoo/owl";
 import { useService } from "@web/core/utils/hooks";
-import { NumberPopup } from "@point_of_sale/app/components/popups/number_popup/number_popup";
 
 patch(PartnerList.prototype, {
     setup() {
