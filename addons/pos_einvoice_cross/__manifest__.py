@@ -5,8 +5,8 @@
     'author': 'Crossnexion EAS',
     'website': 'www.crossnexion.com',
     'license': 'OPL-1',
-    'category': 'Uncategorized',
-    'version': '25.4.23',
+    'category': 'Point of Sale',
+    'version': '19.0.1.0.1',
     'depends': [
         'point_of_sale',
         'l10n_py',

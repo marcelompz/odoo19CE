@@ -7,12 +7,12 @@ import { useService, useAutofocus } from "@web/core/utils/hooks";
 import { useAsyncLockedMethod } from "@point_of_sale/app/utils/hooks";
 import { session } from "@web/session";
 import { PartnerLine } from "@point_of_sale/app/screens/partner_list/partner_line/partner_line";
-import { PartnerListScreen } from "@point_of_sale/app/screens/partner_list/partner_list";
+import { PartnerList } from "@point_of_sale/app/screens/partner_list/partner_list";
 import { PartnerDetailsEdit } from "@point_of_sale/app/screens/partner_list/partner_editor/partner_editor";
 
-class CustomPartnerListScreen extends PartnerListScreen {
+class CustomPartnerListScreen extends PartnerList {
     static components = { PartnerDetailsEdit, PartnerLine };
-    static template = "point_of_sale.PartnerListScreen";
+    static template = "point_of_sale.PartnerList";
 
     setup() {
         super.setup();
