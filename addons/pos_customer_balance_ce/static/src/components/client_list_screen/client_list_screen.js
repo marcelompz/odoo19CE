@@ -36,10 +36,14 @@ patch(PartnerList.prototype, {
         return true;
     },
 
-    async settleCustomerAccount(partner) {
-        if (!partner) {
-            return;
-        }
+
+});
+import { PartnerLine } from "@point_of_sale/app/screens/partner_list/partner_line/partner_line";
+
+patch(PartnerLine.prototype, {
+    async settleCustomerAccount() {
+        const partner = this.props.partner;
+        if (!partner) return;
         
         const debt = partner.outstanding_debt || 0;
         if (debt <= 0) {
@@ -75,5 +79,9 @@ patch(PartnerList.prototype, {
         });
 
         this.pos.showScreen('PaymentScreen');
+        // Also close the partner list dialog if it's open
+        if (this.props.close) {
+            this.props.close();
+        }
     }
 });

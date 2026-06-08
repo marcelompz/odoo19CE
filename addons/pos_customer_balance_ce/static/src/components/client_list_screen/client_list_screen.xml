@@ -23,9 +23,16 @@
     <!-- Adjust PartnerLine content -->
     <t t-name="pos_customer_balance_ce.PartnerLine" t-inherit="point_of_sale.PartnerLine" t-inherit-mode="extension">
         <xpath expr="//td[hasclass('partner-line-balance')]" position="inside">
-            <span t-att-class="{ 'outstanding-debt-negative': props.partner.outstanding_debt &lt; 0 }" class="fw-bold">
-                <t t-esc="env.utils.formatCurrency(props.partner.outstanding_debt || 0, env.currency)" />
-            </span>
+            <div class="d-flex align-items-center justify-content-end gap-2">
+                <span t-att-class="{ 'outstanding-debt-negative': props.partner.outstanding_debt &lt; 0 }" class="fw-bold">
+                    <t t-esc="env.utils.formatCurrency(props.partner.outstanding_debt || 0, env.currency)" />
+                </span>
+                <button t-if="props.partner.outstanding_debt &gt; 0" 
+                        class="btn btn-sm btn-primary" 
+                        t-on-click.stop="() => this.settleCustomerAccount()">
+                    Pagar Saldo
+                </button>
+            </div>
         </xpath>
         <!-- Adjust alignment of other columns to match headers if needed -->
         <xpath expr="//tr[hasclass('partner-line')]/td[1]" position="attributes">
