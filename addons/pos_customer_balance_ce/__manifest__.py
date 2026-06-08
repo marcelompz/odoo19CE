@@ -11,7 +11,7 @@
     'website': 'https://www.crossnexion.com',
     'license': 'OPL-1',
     'category': 'Point of Sale',
-    'version': '19.0.2.1.0',
+    'version': '19.0.2.1.1',
     'depends': ['point_of_sale', 'account'],
     'data': [
         'security/ir.model.access.csv',

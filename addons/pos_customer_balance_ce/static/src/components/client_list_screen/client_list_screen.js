@@ -48,17 +48,17 @@ patch(PartnerLine.prototype, {
         if (!partner) return;
         
         const debt = partner.outstanding_debt || 0;
-        if (debt <= 0) {
+        if (debt >= 0) {
             console.warn("Este cliente no tiene deuda pendiente para saldar.");
             return;
         }
 
-        let amountToPay = debt;
+        let amountToPay = Math.abs(debt);
 
         // Show a popup to allow the user to enter a specific amount
         const payload = await makeAwaitable(this.env.services.dialog, NumberPopup, {
             title: "Monto a Pagar",
-            startingValue: debt,
+            startingValue: amountToPay,
             isInputSelected: true,
         });
 

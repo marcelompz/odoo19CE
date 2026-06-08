@@ -27,7 +27,7 @@
                 <span t-att-class="{ 'outstanding-debt-negative': props.partner.outstanding_debt &lt; 0 }" class="fw-bold">
                     <t t-esc="env.utils.formatCurrency(props.partner.outstanding_debt || 0, env.currency)" />
                 </span>
-                <button t-if="props.partner.outstanding_debt &gt; 0" 
+                <button t-if="props.partner.outstanding_debt &lt; 0" 
                         class="btn btn-sm btn-primary" 
                         t-on-click.stop="() => this.settleCustomerAccount()">
                     Pagar Saldo
