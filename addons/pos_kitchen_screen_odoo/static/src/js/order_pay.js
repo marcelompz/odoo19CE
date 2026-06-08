@@ -33,7 +33,7 @@ patch(PosStore.prototype, {
         return result;
     },
     async pay() {
-        let order_name = this.get_order().pos_reference;
+        let order_name = this.getOrder().pos_reference;
         let self = this;
         const result = await rpc("/web/dataset/call_kw/pos.order/check_order",{
             model: 'pos.order', method: 'check_order',
@@ -59,36 +59,7 @@ patch(PosStore.prototype, {
             self.kitchen = true;
         }
 
-        const currentOrder = this.get_order();
-
-        if (!currentOrder.canPay()) {
-            return;
-        }
-
-        if (
-            currentOrder.lines.some(
-                (line) => line.get_product().tracking !== "none" && !line.has_valid_product_lot()
-            ) &&
-            (this.pickingType.use_create_lots || this.pickingType.use_existing_lots) && (result == false)
-        ) {
-            const confirmed = await ask(this.env.services.dialog, {
-                title: _t("Some Serial/Lot Numbers are missing"),
-                body: _t(
-                    "You are trying to sell products with serial/lot numbers, but some of them are not set.\nWould you like to proceed anyway?"
-                ),
-            });
-            if (confirmed) {
-                this.mobile_pane = "right";
-                this.env.services.pos.showScreen("PaymentScreen", {
-                    orderUuid: this.selectedOrderUuid,
-                });
-            }
-        } else {
-            this.mobile_pane = "right";
-            this.env.services.pos.showScreen("PaymentScreen", {
-                orderUuid: this.selectedOrderUuid,
-            });
-        }
+        return super.pay(...arguments);
     }
 
 
