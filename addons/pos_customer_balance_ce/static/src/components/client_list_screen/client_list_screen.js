@@ -1,5 +1,5 @@
 /** @odoo-module **/
-
+// Cache bust: 2
 import { PartnerList } from "@point_of_sale/app/screens/partner_list/partner_list";
 import { patch } from "@web/core/utils/patch";
 import { onWillStart } from "@odoo/owl";
