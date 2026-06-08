@@ -4,9 +4,9 @@ class PosOrder(models.Model):
     _inherit = 'pos.order'
 
     @api.model
-    def _process_order(self, order, draft, existing_order):
+    def _process_order(self, order, existing_order):
         # Process the order normally first
-        pos_order_id = super()._process_order(order, draft, existing_order)
+        pos_order_id = super()._process_order(order, existing_order)
         
         pos_order = self.browse(pos_order_id)
         
