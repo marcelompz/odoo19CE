@@ -10,14 +10,8 @@ for c in companies:
         print(f"  - Cuenta Encontrada: {acc.name}")
         c.account_default_pos_receivable_account_id = acc
         
-        # also check payment methods
-        methods = env['pos.payment.method'].sudo().search([('company_id', '=', c.id)])
-        for m in methods:
-            if not m.receivable_account_id:
-                m.receivable_account_id = acc
-                print(f"  - Metodo: {m.name} asignado a {acc.name}")
-    else:
-        print("  - NO SE ENCONTRO CUENTA RECEIVABLE PARA ESTA COMPANIA")
+    # Omitimos actualizar los payment methods porque causa error si hay sesiones abiertas
+    pass
 
 env.cr.commit()
 print("FINALIZADO")
