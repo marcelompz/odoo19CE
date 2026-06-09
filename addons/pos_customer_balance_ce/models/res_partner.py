@@ -63,7 +63,14 @@ class ResPartner(models.Model):
                 real_paid = sum(order.payment_ids.filtered(
                     lambda p: p.payment_method_id.type in ['cash', 'bank']
                 ).mapped('amount'))
-                pos_debt_delta += (order.amount_total - real_paid)
+                
+                # Exclude debt settlement product from order total to calculate true debt delta
+                settlement_amount = sum(order.lines.filtered(
+                    lambda l: l.product_id.name == 'Abono de Cuenta'
+                ).mapped('price_subtotal_incl'))
+                
+                real_amount_total = order.amount_total - settlement_amount
+                pos_debt_delta += (real_amount_total - real_paid)
 
             total_due = accounting_balance + pos_debt_delta
             partner.outstanding_debt = -total_due
