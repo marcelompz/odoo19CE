@@ -59,7 +59,6 @@ patch(PartnerLine.prototype, {
         const payload = await makeAwaitable(this.env.services.dialog, NumberPopup, {
             title: "Monto a Pagar",
             startingValue: amountToPay,
-            isInputSelected: true,
         });
 
         if (!payload) {
