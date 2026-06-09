@@ -43,39 +43,40 @@ class ResPartner(models.Model):
     @api.depends('invoice_ids', 'move_line_ids', 'pos_order_ids')
     def _compute_outstanding_debt(self):
         for partner in self:
-            # --- 1. SALDO CONTABLE (ZONA DE RIESGO) ---
             accounting_balance = 0.0
             try:
-                # Al acceder a partner.debit, Odoo dispara el método _credit_debit_get.
-                # Lo envolvemos en un try/except para capturar el error nativo del NoneType.
                 accounting_balance = (partner.debit or 0.0) - (partner.credit or 0.0)
             except Exception as e:
-                # Si el núcleo de Odoo falla, registramos el aviso y asumimos 0.0
                 _logger.error("Fallo en cálculo contable de Odoo para partner %s: %s", partner.id, e)
                 accounting_balance = 0.0
 
-            # --- 2. PEDIDOS DE POS (MANTENEMOS TU LÓGICA) ---
             pos_orders = self.env['pos.order'].search([
                 ('partner_id', '=', partner.id),
-                ('state', 'in', ['paid', 'done']),
-                ('account_move', '=', False)
+                ('state', 'in', ['paid', 'done', 'draft']), # draft orders might be pending in session
+                ('session_id.state', '!=', 'closed')
             ])
             
             pos_debt_delta = 0.0
             for order in pos_orders:
-                # Sumamos lo pagado en efectivo/banco (ignorando el cambio/vuelto)
+                if order.account_move and order.account_move.state == 'posted':
+                    continue # Already in accounting_balance
                 real_paid = sum(order.payment_ids.filtered(
                     lambda p: not p.is_change and p.payment_method_id.type in ['cash', 'bank']
                 ).mapped('amount'))
-                # La diferencia es lo que se mandó a "Cuenta de cliente"
                 pos_debt_delta += (order.amount_total - real_paid)
 
-            # --- 3. CÁLCULO FINAL ---
             total_due = accounting_balance + pos_debt_delta
-
-            # Según tu requerimiento anterior: 
-            # Favor del cliente en positivo, deuda en negativo/rojo.
             partner.outstanding_debt = -total_due
+
+            _logger.info(
+                "--- OUTSTANDING DEBT CALCULATION PARA %s ---\n"
+                "Accounting balance: %s\n"
+                "POS Orders Encontradas: %s\n"
+                "POS Debt Delta: %s\n"
+                "Total Due: %s\n"
+                "Outstanding Debt: %s",
+                partner.name, accounting_balance, pos_orders.ids, pos_debt_delta, total_due, partner.outstanding_debt
+            )
 
     @api.model
     def _load_pos_data_fields(self, config_id):
