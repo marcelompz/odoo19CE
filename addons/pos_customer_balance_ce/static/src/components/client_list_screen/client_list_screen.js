@@ -73,7 +73,7 @@ patch(PartnerLine.prototype, {
 
         amountToPay = inputAmount;
 
-        const settle_due_product_id = this.pos.pos_session['pos_customer_balance_ce.product_id'];
+        const settle_due_product_id = this.pos['pos_customer_balance_ce.product_id'];
         if (!settle_due_product_id) {
             console.error("No se encontró el producto de Settle Due.");
             return;
