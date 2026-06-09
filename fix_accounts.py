@@ -4,10 +4,9 @@ import sys
 product = env.ref('pos_customer_balance_ce.product_product_settle_due', raise_if_not_found=False)
 
 # Find a valid income account
-income_account = env['account.account'].search([('account_type', '=', 'income'), ('company_id', '=', env.company.id)], limit=1)
-
-if not income_account:
-    # try another company or without company filter
+try:
+    income_account = env['account.account'].search([('account_type', '=', 'income'), ('company_ids', 'in', env.company.id)], limit=1)
+except Exception:
     income_account = env['account.account'].search([('account_type', '=', 'income')], limit=1)
 
 if product and income_account:
