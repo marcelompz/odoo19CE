@@ -12,5 +12,6 @@ try:
     session.action_pos_session_closing_control()
     print("Session closed successfully!")
 except Exception as e:
-    print("\n=== TRACEBACK ===")
-    traceback.print_exc()
+    with open('/tmp/traceback.txt', 'w') as f:
+        traceback.print_exc(file=f)
+    print("Traceback saved to /tmp/traceback.txt")
