@@ -95,9 +95,9 @@ patch(PartnerLine.prototype, {
         order.set_partner(partner);
 
         await this.pos.addLineToCurrentOrder({
-            product: product,
-            price: amountToPay,
-            quantity: 1,
+            product_id: product,
+            price_unit: amountToPay,
+            qty: 1,
             merge: false,
         });
 
