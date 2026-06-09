@@ -1,14 +1,23 @@
 import sys
 
-company = env.company
+companies = env['res.company'].search([])
+for c in companies:
+    print(f"Compania: {c.name} (ID: {c.id})")
+    
+    # Try finding an account for this company explicitly
+    acc = env['account.account'].sudo().search([('account_type', '=', 'asset_receivable'), ('company_ids', 'in', c.id)], limit=1)
+    if acc:
+        print(f"  - Cuenta Encontrada: {acc.name}")
+        c.account_default_pos_receivable_account_id = acc
+        
+        # also check payment methods
+        methods = env['pos.payment.method'].sudo().search([('company_id', '=', c.id)])
+        for m in methods:
+            if not m.receivable_account_id:
+                m.receivable_account_id = acc
+                print(f"  - Metodo: {m.name} asignado a {acc.name}")
+    else:
+        print("  - NO SE ENCONTRO CUENTA RECEIVABLE PARA ESTA COMPANIA")
 
-print(f"Current Company: {company.name} (ID: {company.id})")
-
-accounts = env['account.account'].search([('account_type', '=', 'asset_receivable')])
-print(f"Total receivable accounts in DB: {len(accounts)}")
-for acc in accounts[:5]:
-    # Try to see companies
-    if hasattr(acc, 'company_ids'):
-        print(f" - {acc.name} | company_ids: {[c.name for c in acc.company_ids]}")
-    elif hasattr(acc, 'company_id'):
-        print(f" - {acc.name} | company_id: {acc.company_id.name}")
+env.cr.commit()
+print("FINALIZADO")
