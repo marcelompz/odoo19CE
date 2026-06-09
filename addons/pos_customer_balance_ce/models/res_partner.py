@@ -61,7 +61,7 @@ class ResPartner(models.Model):
                 if order.account_move and order.account_move.state == 'posted':
                     continue # Already in accounting_balance
                 real_paid = sum(order.payment_ids.filtered(
-                    lambda p: not p.is_change and p.payment_method_id.type in ['cash', 'bank']
+                    lambda p: p.payment_method_id.type in ['cash', 'bank']
                 ).mapped('amount'))
                 pos_debt_delta += (order.amount_total - real_paid)
 
