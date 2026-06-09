@@ -1,25 +1,23 @@
 import sys
-import traceback
 
 session = env['pos.session'].search([('state', '!=', 'closed')], limit=1)
 if not session:
     print("No open sessions found.")
     sys.exit(0)
 
-print(f"Trying to close session: {session.name} (ID: {session.id})")
+print(f"Checking session: {session.name}")
 
-try:
-    # Intenta validar y cerrar la caja programaticamente para atrapar el error
-    # En Odoo 19:
-    session.action_pos_session_closing_control()
-    print("Session closed successfully!")
-except Exception as e:
-    print("\n=== ERROR AL CERRAR LA SESION ===")
-    print(str(e))
-    print("\n=== TRACEBACK ===")
-    traceback.print_exc()
-    
-    # Intenta hacer un log mas profundo
-    if hasattr(e, 'args'):
-        print("\nArgs:", e.args)
+order_lines = session.order_ids.mapped('lines')
+for line in order_lines:
+    if line.qty > 0:
+        # It's an income
+        account = line.product_id.with_company(session.company_id)._get_product_accounts()['income']
+    else:
+        # It's a refund / expense
+        account = line.product_id.with_company(session.company_id)._get_product_accounts()['expense']
+        
+    if not account:
+        print(f"❌ FAIL: Line ID {line.id} | Order: {line.order_id.name} | Product: {line.product_id.name} | Qty: {line.qty} -> NO ACCOUNT")
+    else:
+        print(f"✅ OK: Line ID {line.id} | Order: {line.order_id.name} | Product: {line.product_id.name} | Qty: {line.qty} -> Account: {account.name}")
 
