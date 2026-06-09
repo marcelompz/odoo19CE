@@ -24,8 +24,16 @@
     <t t-name="pos_customer_balance_ce.PartnerLine" t-inherit="point_of_sale.PartnerLine" t-inherit-mode="extension">
         <xpath expr="//td[hasclass('partner-line-balance')]" position="inside">
             <div class="d-flex align-items-center justify-content-end gap-2">
-                <span t-att-class="{ 'outstanding-debt-negative': props.partner.outstanding_debt &lt; 0 }" class="fw-bold">
-                    <t t-esc="env.utils.formatCurrency(props.partner.outstanding_debt || 0, env.currency)" />
+                <span class="fw-bold" t-att-class="{ 'text-danger': props.partner.outstanding_debt &lt; 0, 'text-success': props.partner.outstanding_debt &gt; 0 }">
+                    <t t-if="props.partner.outstanding_debt &lt; 0">
+                        - <t t-esc="env.utils.formatCurrency(Math.abs(props.partner.outstanding_debt), env.currency)" />
+                    </t>
+                    <t t-elif="props.partner.outstanding_debt &gt; 0">
+                        + <t t-esc="env.utils.formatCurrency(props.partner.outstanding_debt, env.currency)" />
+                    </t>
+                    <t t-else="">
+                        <t t-esc="env.utils.formatCurrency(0, env.currency)" />
+                    </t>
                 </span>
                 <button t-if="props.partner.outstanding_debt &lt; 0" 
                         class="btn btn-sm btn-primary" 
