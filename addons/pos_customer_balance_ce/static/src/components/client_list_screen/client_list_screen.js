@@ -95,7 +95,7 @@ patch(PartnerLine.prototype, {
             merge: false,
         });
 
-        this.pos.navigate('PaymentScreen');
+        this.pos.pay();
         // Also close the partner list dialog if it's open
         if (this.props.close) {
             this.props.close();
