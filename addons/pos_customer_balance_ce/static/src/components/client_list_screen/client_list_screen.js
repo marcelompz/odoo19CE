@@ -85,8 +85,6 @@ patch(PartnerLine.prototype, {
             order = this.pos.getOrder();
         }
 
-        order.setPartner(partner);
-
         await this.pos.addLineToCurrentOrder({
             product_id: product,
             product_tmpl_id: product.product_tmpl_id,
@@ -96,9 +94,16 @@ patch(PartnerLine.prototype, {
         });
 
         this.pos.pay();
-        // Also close the partner list dialog if it's open
-        if (this.props.close) {
-            this.props.close();
-        }
+
+        // Odoo 19's selectPartner awaits the dialog close and sets the partner to the payload.
+        // Since pay() closes the dialog automatically by navigating, it resolves with undefined,
+        // causing selectPartner to set the partner to false on our new order.
+        // We wait for that to happen and then set the correct partner.
+        setTimeout(() => {
+            const currentOrder = this.pos.getOrder();
+            if (currentOrder) {
+                currentOrder.setPartner(partner);
+            }
+        }, 150);
     }
 });
