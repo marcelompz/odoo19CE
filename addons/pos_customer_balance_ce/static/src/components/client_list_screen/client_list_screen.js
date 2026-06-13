@@ -73,15 +73,9 @@ patch(PartnerLine.prototype, {
 
         amountToPay = inputAmount;
 
-        const settle_due_product_id = this.pos['pos_customer_balance_ce.product_id'];
-        if (!settle_due_product_id) {
-            console.error("No se encontró el producto de Settle Due.");
-            return;
-        }
-
-        const product = this.pos.models['product.product'].find(p => p.id === settle_due_product_id);
+        const product = this.pos.models['product.product'].find(p => p.display_name === 'Abono de Cuenta' || p.name === 'Abono de Cuenta');
         if (!product) {
-            console.error("Producto de Settle Due no está cargado en el TPV.");
+            console.error("Producto de Settle Due ('Abono de Cuenta') no está cargado en el TPV.");
             return;
         }
 

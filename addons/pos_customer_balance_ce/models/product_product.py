@@ -1,4 +1,5 @@
 from odoo import models, api
+# pyrefly: ignore [missing-import]
 from odoo.exceptions import UserError
 
 class ProductProduct(models.Model):
