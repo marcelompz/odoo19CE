@@ -89,6 +89,7 @@ patch(PartnerLine.prototype, {
 
         await this.pos.addLineToCurrentOrder({
             product_id: product,
+            product_tmpl_id: product.product_tmpl_id,
             price_unit: amountToPay,
             qty: 1,
             merge: false,
