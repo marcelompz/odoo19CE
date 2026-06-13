@@ -12,7 +12,7 @@ class ResPartner(models.Model):
         string='Saldo Pendiente',
         compute='_compute_outstanding_debt',
         currency_field='company_currency_id',
-        depends=['invoice_ids.state', 'invoice_ids.amount_residual', 'pos_order_ids.state', 'pos_order_ids.amount_total'],
+        depends=['invoice_ids.state', 'invoice_ids.amount_residual'],
     )
 
     company_currency_id = fields.Many2one(
@@ -40,14 +40,27 @@ class ResPartner(models.Model):
                 partner.credit = 0.0
             return True
 
-    @api.depends('invoice_ids', 'move_line_ids', 'pos_order_ids')
+    @api.depends('invoice_ids', 'move_line_ids')
     def _compute_outstanding_debt(self):
         for partner in self:
+            partner_c = partner.with_company(self.env.company)
             accounting_balance = 0.0
             try:
-                accounting_balance = (partner.debit or 0.0) - (partner.credit or 0.0)
+                # Omitimos el uso de partner_c.debit y partner_c.credit directo 
+                # porque Odoo puede mantener el caché de un company_id diferente 
+                # (ej. test1) si el partner se cargó antes en la misma transacción RPC.
+                # Calculamos el balance de la cuenta a cobrar manualmente:
+                account_id = partner_c.property_account_receivable_id
+                if account_id:
+                    self.env.cr.execute("""
+                        SELECT SUM(debit) - SUM(credit)
+                        FROM account_move_line
+                        WHERE partner_id = %s AND account_id = %s AND reconciled = False
+                    """, (partner.id, account_id.id))
+                    res = self.env.cr.fetchone()
+                    accounting_balance = res[0] or 0.0
             except Exception as e:
-                _logger.error("Fallo en cálculo contable de Odoo para partner %s: %s", partner.id, e)
+                _logger.error("Fallo en cálculo contable manual para partner %s: %s", partner.id, e)
                 accounting_balance = 0.0
 
             pos_orders = self.env['pos.order'].search([
@@ -60,6 +73,14 @@ class ResPartner(models.Model):
             for order in pos_orders:
                 if order.account_move and order.account_move.state == 'posted':
                     continue # Already in accounting_balance
+                
+                compensating_move = self.env['account.move'].search([
+                    ('ref', 'ilike', f'%{order.name}%'),
+                    ('state', '=', 'posted')
+                ], limit=1)
+                if compensating_move:
+                    continue # Already in accounting_balance
+
                 real_paid = sum(order.payment_ids.filtered(
                     lambda p: p.payment_method_id.type in ['cash', 'bank']
                 ).mapped('amount'))

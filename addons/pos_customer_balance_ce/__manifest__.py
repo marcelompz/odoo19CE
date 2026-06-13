@@ -11,10 +11,11 @@
     'website': 'https://www.crossnexion.com',
     'license': 'OPL-1',
     'category': 'Point of Sale',
-    'version': '19.0.2.1.1',
+    'version': '19.0.2.2.3',
     'depends': ['point_of_sale', 'account'],
     'data': [
         'security/ir.model.access.csv',
+        'views/res_config_settings_views.xml',
         'data/product_data.xml',
     ],
     'assets': {

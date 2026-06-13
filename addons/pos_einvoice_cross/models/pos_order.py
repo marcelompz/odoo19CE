@@ -51,7 +51,7 @@ class PosOrderInherit(models.Model):
             
             new_move = order._create_invoice(move_vals)
 
-            order.write({'account_move': new_move.id, 'state': 'invoiced'})
+            order.write({'account_move': new_move.id})
             new_move.sudo().with_company(order.company_id).with_context(skip_invoice_sync=True)._post()
 
             try:

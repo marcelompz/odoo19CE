@@ -1,5 +1,5 @@
 /** @odoo-module **/
-// Cache bust: 2
+// Cache bust: 5
 import { PartnerList } from "@point_of_sale/app/screens/partner_list/partner_list";
 import { patch } from "@web/core/utils/patch";
 import { onWillStart } from "@odoo/owl";
@@ -93,17 +93,36 @@ patch(PartnerLine.prototype, {
             merge: false,
         });
 
-        this.pos.pay();
-
-        // Odoo 19's selectPartner awaits the dialog close and sets the partner to the payload.
-        // Since pay() closes the dialog automatically by navigating, it resolves with undefined,
-        // causing selectPartner to set the partner to false on our new order.
-        // We wait for that to happen and then set the correct partner.
-        setTimeout(() => {
-            const currentOrder = this.pos.getOrder();
-            if (currentOrder) {
-                currentOrder.setPartner(partner);
+        // Update the local debt visually so the user sees the change immediately
+        // Debt is represented as a negative number
+        if (partner.outstanding_debt < 0) {
+            partner.outstanding_debt += amountToPay;
+            if (partner.outstanding_debt > 0) {
+                partner.outstanding_debt = 0;
             }
-        }, 150);
+        }
+
+        // Close the PartnerList popup and resolve with the current partner
+        // This automatically assigns the partner to the new order via selectPartner's awaitable!
+        if (this.props.onClickPartner) {
+            this.props.onClickPartner(partner);
+        } else if (this.props.close) {
+            this.props.close();
+            let currentOrder = this.pos.getOrder();
+            if (currentOrder) currentOrder.setPartner(partner);
+        } else {
+            let currentOrder = this.pos.getOrder();
+            if (currentOrder) currentOrder.setPartner(partner);
+        }
+
+        // Assign invoice flag based on settings
+        let currentOrder = this.pos.getOrder();
+        if (currentOrder) {
+            const shouldInvoice = this.pos['pos_customer_balance_ce.auto_invoice'];
+            currentOrder.setToInvoice(shouldInvoice || false);
+        }
+
+        // Navigate to payment screen
+        this.pos.pay();
     }
 });
