@@ -79,13 +79,13 @@ patch(PartnerLine.prototype, {
             return;
         }
 
-        let order = this.pos.get_order();
-        if (!order || order.get_orderlines().length > 0) {
-            this.pos.add_new_order();
-            order = this.pos.get_order();
+        let order = this.pos.getOrder();
+        if (!order || order.getOrderlines().length > 0) {
+            this.pos.addNewOrder();
+            order = this.pos.getOrder();
         }
 
-        order.set_partner(partner);
+        order.setPartner(partner);
 
         await this.pos.addLineToCurrentOrder({
             product_id: product,
@@ -94,7 +94,7 @@ patch(PartnerLine.prototype, {
             merge: false,
         });
 
-        this.pos.showScreen('PaymentScreen');
+        this.pos.navigate('PaymentScreen');
         // Also close the partner list dialog if it's open
         if (this.props.close) {
             this.props.close();
