@@ -50,6 +50,54 @@ class ExcelRecipeImportWizard(models.TransientModel):
             'target': 'new',
         }
 
+    def action_export_missing_pos_bom(self):
+        """Exporta productos POS BoM que no tienen lista de materiales configurada"""
+        if not pd:
+            raise UserError(_("La librería 'pandas' no está instalada."))
+
+        # Buscar productos que deberían tener receta POS BoM
+        products = self.env['product.product'].search([('product_tmpl_id.is_pos_bom', '=', True)])
+        
+        # Buscar cuáles de esos productos ya tienen receta
+        boms = self.env['pos.product.bom'].search([('product_id', 'in', products.ids)])
+        products_with_bom = boms.mapped('product_id')
+        
+        # Filtrar los que faltan
+        missing_products = products - products_with_bom
+
+        if not missing_products:
+            raise UserError(_("¡Genial! Todos los productos marcados como 'POS BoM' ya tienen su receta configurada."))
+
+        data = []
+        for p in missing_products:
+            data.append({
+                'Recipe': p.name,
+                'Component': '',
+                'Quantity': ''
+            })
+
+        df = pd.DataFrame(data)
+        
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, sheet_name='POS BoM (Comidas)', index=False)
+            
+        file_content = output.getvalue()
+        
+        attachment_id = self.env['ir.attachment'].create({
+            'name': 'recetas_faltantes_pos_bom.xlsx',
+            'type': 'binary',
+            'datas': base64.b64encode(file_content),
+            'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'public': True
+        })
+
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/web/content/%s?download=true' % attachment_id.id,
+            'target': 'new',
+        }
+
     def _get_or_create_uom(self, uom_name):
         uom_name = str(uom_name).strip()
         if not uom_name or uom_name.lower() in ['nan', 'none']:

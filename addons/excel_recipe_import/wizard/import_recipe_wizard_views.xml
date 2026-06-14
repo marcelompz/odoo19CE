@@ -16,7 +16,8 @@
                 </group>
                 <footer>
                     <button name="action_import" string="Importar" type="object" class="btn-primary"/>
-                    <button name="action_download_template" string="Descargar Plantilla" type="object" class="btn-secondary"/>
+                    <button name="action_download_template" string="Descargar Plantilla Base" type="object" class="btn-secondary"/>
+                    <button name="action_export_missing_pos_bom" string="Exportar Faltantes (POS BoM)" type="object" class="btn-secondary"/>
                     <button string="Cancelar" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
