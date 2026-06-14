@@ -30,6 +30,13 @@
         <field name="target">new</field>
     </record>
 
+    <menuitem id="menu_excel_recipe_root" name="Importador Excel" sequence="50"/>
+    <menuitem id="menu_excel_recipe_import_main"
+              name="Importar Recetas"
+              parent="menu_excel_recipe_root"
+              action="action_excel_recipe_import_wizard"
+              sequence="10"/>
+
     <menuitem id="menu_excel_recipe_import_mrp"
               name="Importador Excel"
               parent="mrp.menu_mrp_root"
