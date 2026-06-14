@@ -4,3 +4,5 @@ nextcloud-api-wrapper
 boto3
 paramiko
 dnspython
+pandas
+openpyxl

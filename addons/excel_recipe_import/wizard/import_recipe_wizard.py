@@ -16,7 +16,7 @@ class ExcelRecipeImportWizard(models.TransientModel):
     _name = 'excel.recipe.import.wizard'
     _description = 'Excel Recipe Import Wizard'
 
-    import_file = fields.Binary('Archivo Excel', required=True)
+    import_file = fields.Binary('Archivo Excel', required=False)
     import_filename = fields.Char('Nombre del Archivo')
 
     def action_download_template(self):
@@ -100,6 +100,9 @@ class ExcelRecipeImportWizard(models.TransientModel):
         return product
 
     def action_import(self):
+        if not self.import_file:
+            raise UserError(_("Por favor, suba un archivo Excel para importar."))
+
         if not pd:
             raise UserError(_("La librería 'pandas' no está instalada."))
 
