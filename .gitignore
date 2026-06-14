@@ -4,3 +4,6 @@ ssh_debug.log
 .env
 __pycache__/
 *.pyc
+
+test_scripts/
+migracion/
