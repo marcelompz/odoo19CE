@@ -13,10 +13,26 @@ with urllib.request.urlopen(req) as response:
         writer = csv.writer(csvfile)
         writer.writerow(['Name', 'Price', 'Image_URL'])
         
-        main = soup.find('main', class_='main')
-        if main:
-            print("Main element text length:", len(main.text))
-            for tag in main.find_all(True):
-                print(tag.name, tag.get('class'))
-        else:
-            print("No main element found.")
+        products = soup.find_all('div', class_='product-item')
+        count = 0
+        for p in products:
+            title_el = p.find('h3', class_='product-item__title')
+            name = title_el.text.strip() if title_el else ''
+            
+            price_el = p.find('div', class_='product-item__price')
+            price = price_el.text.strip() if price_el else ''
+            # sometimes price is inside a span inside a different class
+            if not price:
+                price_el = p.find('span', class_='product-row__price-value')
+                price = price_el.text.strip() if price_el else ''
+                
+            img_el = p.find('img', class_='product-item__thumbnail')
+            if not img_el:
+                img_el = p.find('img', class_='product-row__thumbnail')
+            img_url = img_el.get('src') if img_el else ''
+            
+            if name:
+                writer.writerow([name, price, img_url])
+                count += 1
+                
+        print(f"Successfully scraped {count} products and saved to /opt/odoo/odoo8084/electropar_products.csv")
