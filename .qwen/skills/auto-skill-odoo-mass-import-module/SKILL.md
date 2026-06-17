@@ -1,6 +1,6 @@
 ---
 name: odoo-mass-import-module
-description: Create Odoo modules for mass product import with Excel and manual batch entry, including stock quantity assignment
+description: Create Odoo modules for mass product import with Excel and manual batch entry, including stock quantity assignment with batch processing optimizations
 source: auto-skill
 extracted_at: '2026-06-17T17:30:44.292Z'
 ---
@@ -8,6 +8,45 @@ extracted_at: '2026-06-17T17:30:44.292Z'
 ## Odoo Mass Import Module Creation
 
 When creating Odoo modules for mass data import (products, partners, etc.) with stock/quantity assignment, follow this pattern:
+
+### Performance Optimization - Avoid N+1 Queries
+
+**CRITICAL:** For imports of 100+ records, use batch processing to avoid N+1 query problem:
+
+```python
+# ❌ SLOW - 10,000 queries for 10,000 rows
+for row in rows:
+    existing = self.env['product.product'].search([('barcode', '=', row.barcode)])
+    category = self.env['product.category'].search([('name', '=', row.categ_name)])
+    product = self.env['product.product'].create(vals)
+
+# ✅ FAST - 3-4 queries total for 10,000 rows
+# 1. Batch validate all barcodes
+excel_barcodes = [row.barcode for row in rows if row.barcode]
+existing_barcodes = set(self.env['product.product'].search(
+    [('barcode', 'in', excel_barcodes)]
+).mapped('barcode'))
+
+# 2. Batch cache categories
+unique_categ_names = set(rows.mapped('categ_name'))
+categories_cache = {name: self.env['product.category'].search([('name', '=', name)], limit=1) 
+                    for name in unique_categ_names if name}
+
+# 3. Batch create all products
+product_vals_list = [build_vals(row) for row in valid_rows]
+created_products = self.env['product.product'].create(product_vals_list)
+
+# 4. Batch create inventory adjustments
+quant_vals_list = [{'product_id': p.id, 'location_id': loc.id, 'inventory_quantity': qty} 
+                   for p, qty in products_to_quant]
+quants = self.env['stock.quant'].with_context(inventory_mode=True).create(quant_vals_list)
+for quant in quants:
+    quant.action_apply_inventory()
+```
+
+**Expected Performance:**
+- N+1 approach: ~30-60 seconds for 1,000 products
+- Batch approach: ~2-5 seconds for 1,000 products
 
 ### Module Structure
 
@@ -229,13 +268,15 @@ XML files in `data` are loaded sequentially. If using view inheritance (`inherit
 ### Validation Checklist
 
 - [ ] Barcode uniqueness check before creation
-- [ ] Required field validation (name, prices)
+- [ ] **Internal duplicate check** (same barcode appears twice in Excel file)
+- [ ] Required field validation (name, reference)
 - [ ] Negative value prevention
 - [ ] Preview state before confirming
-- [ ] Error messages displayed in tree view (decoration-danger)
+- [ ] Error messages displayed in list view (decoration-danger)
 - [ ] Category auto-creation if not exists
 - [ ] Stock only applied when qty > 0
 - [ ] Security access for stock user and manager groups
+- [ ] **Batch processing for 1000+ imports**
 
 ### Menu Placement
 
