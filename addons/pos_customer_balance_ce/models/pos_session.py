@@ -16,10 +16,7 @@ class PosSession(models.Model):
         loaded_data['pos_customer_balance_ce.auto_invoice'] = self.config_id.auto_invoice_debt_payment
             
         return loaded_data
-    def _loader_params_pos_payment_method(self):
-        result = super()._loader_params_pos_payment_method()
-        result['search_params']['fields'].extend(['pricelist_id'])
-        return result
+
 
     def _get_sale_key(self, base_line):
         key = super()._get_sale_key(base_line)

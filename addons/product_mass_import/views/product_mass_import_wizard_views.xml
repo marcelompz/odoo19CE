@@ -31,7 +31,7 @@
 
                     <notebook attrs="{'invisible': [('state', '!=', 'preview')]}">
                         <page string="Vista Previa de Productos" name="preview">
-                            <field name="preview_ids">
+                            <field name="preview_ids" context="{'tree_view_ref': 'product_mass_import.product_mass_import_preview_view_tree'}">
                                 <tree editable="bottom" decoration-danger="error_message != False">
                                     <field name="row_number" readonly="1"/>
                                     <field name="name"/>
