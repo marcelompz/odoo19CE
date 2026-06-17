@@ -49,7 +49,9 @@
                                 <list editable="bottom" decoration-danger="error_message != False"
                                       decoration-success="is_valid == True and product_id != False">
                                     <field name="sequence" widget="handle"/>
+                                    <field name="default_code" required="1"/>
                                     <field name="name" required="1"/>
+                                    <field name="pos_description"/>
                                     <field name="barcode"/>
                                     <field name="categ_name"/>
                                     <field name="pos_categ_name"/>
