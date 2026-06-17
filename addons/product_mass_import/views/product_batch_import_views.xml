@@ -107,7 +107,6 @@
                 <filter name="draft" string="Borrador" domain="[('state', '=', 'draft')]"/>
                 <filter name="validated" string="Validado" domain="[('state', '=', 'validated')]"/>
                 <filter name="done" string="Completado" domain="[('state', '=', 'done')]"/>
-                <groupby name="state"/>
                 <groupby name="location_id"/>
             </search>
         </field>
