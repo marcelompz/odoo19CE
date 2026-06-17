@@ -166,7 +166,9 @@ class ProductBatchImportLine(models.Model):
 
     batch_id = fields.Many2one('product.batch.import', string='Importación en Lote', ondelete='cascade', required=True)
     sequence = fields.Integer(string='Secuencia', default=10)
+    default_code = fields.Char(string='Referencia Interna', required=True)
     name = fields.Char(string='Nombre del Producto', required=True)
+    pos_description = fields.Char(string='Descripción para PdV')
     barcode = fields.Char(string='Código de Barras')
     available_in_pos = fields.Boolean(string='Disponible en PdV', default=True)
     categ_name = fields.Char(string='Categoría de Producto')
