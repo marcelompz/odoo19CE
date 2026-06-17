@@ -96,13 +96,28 @@ docker exec -it odoo_web_8084 pip install --break-system-packages openpyxl
 ## Product Model Changes
 
 ### Product types in Odoo 19
-```python
-# Correct values:
-'product'   # Storable product (almacenable)
-'consu'     # Consumable (consumible)
-'service'   # Service (servicio)
+**IMPORTANT:** Odoo 19 changed the product type selection:
 
-# WRONG: 'storable' is NOT valid in Odoo 19
+```python
+# Odoo 19 CORRECT values:
+'consu'     # Goods (includes storable products) - DEFAULT
+'service'   # Service (servicio)
+'combo'     # Combo pack
+
+# WRONG in Odoo 19:
+'product'   # This was used in Odoo 16-18 for storable, NOW DEPRECATED
+'storable'  # Never existed
+```
+
+**Example:**
+```python
+# Default to 'consu' (Goods) for physical products
+product_type = 'consu'
+if type_val in ['servicio', 'service']:
+    product_type = 'service'
+elif type_val == 'combo':
+    product_type = 'combo'
+# 'almacenable', 'storable', 'product' all map to 'consu' in Odoo 19
 ```
 
 ### Setting initial inventory
