@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Preview Tree View -->
+    <record id="product_mass_import_preview_view_tree" model="ir.ui.view">
+        <field name="name">product.mass.import.preview.tree</field>
+        <field name="model">product.mass.import.preview</field>
+        <field name="arch" type="xml">
+            <tree create="0" delete="0" decoration-danger="error_message != False">
+                <field name="row_number"/>
+                <field name="name"/>
+                <field name="barcode"/>
+                <field name="categ_name"/>
+                <field name="pos_categ_name"/>
+                <field name="list_price"/>
+                <field name="standard_price"/>
+                <field name="qty_on_hand"/>
+                <field name="product_type"/>
+                <field name="tracking"/>
+                <field name="available_in_pos"/>
+                <field name="error_message"/>
+                <field name="is_valid" column_invisible="1"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Override default view for One2many field -->
+    <record id="product_mass_import_wizard_view_form_preview" model="ir.ui.view">
+        <field name="name">product.mass.import.wizard.form.preview</field>
+        <field name="model">product.mass.import.wizard</field>
+        <field name="inherit_id" ref="product_mass_import_wizard_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='preview_ids']" position="attributes">
+                <attribute name="context">{'tree_view_ref': 'product_mass_import.product_mass_import_preview_view_tree'}</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

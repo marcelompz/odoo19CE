@@ -8,5 +8,4 @@ class PosPaymentMethod(models.Model):
     @api.model
     def _load_pos_data_fields(self, config_id):
         result = super()._load_pos_data_fields(config_id)
-        result.append('pricelist_id')
-        return result
+        return result + ['pricelist_id']

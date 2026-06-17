@@ -31,23 +31,7 @@
 
                     <notebook attrs="{'invisible': [('state', '!=', 'preview')]}">
                         <page string="Vista Previa de Productos" name="preview">
-                            <field name="preview_ids" context="{'tree_view_ref': 'product_mass_import.product_mass_import_preview_view_tree'}">
-                                <tree editable="bottom" decoration-danger="error_message != False">
-                                    <field name="row_number" readonly="1"/>
-                                    <field name="name"/>
-                                    <field name="barcode"/>
-                                    <field name="categ_name"/>
-                                    <field name="pos_categ_name"/>
-                                    <field name="list_price"/>
-                                    <field name="standard_price"/>
-                                    <field name="qty_on_hand"/>
-                                    <field name="product_type"/>
-                                    <field name="tracking"/>
-                                    <field name="available_in_pos"/>
-                                    <field name="error_message" optional="show"/>
-                                    <field name="is_valid" column_invisible="1"/>
-                                </tree>
-                            </field>
+                            <field name="preview_ids" mode="tree" options="{'header': false}"/>
                         </page>
                     </notebook>
 
