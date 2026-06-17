@@ -11,11 +11,12 @@
     'website': 'https://www.crossnexion.com',
     'license': 'OPL-1',
     'category': 'Point of Sale',
-    'version': '19.0.2.2.3',
+    'version': '19.0.2.3.3',
     'depends': ['point_of_sale', 'account'],
     'data': [
         'security/ir.model.access.csv',
         'views/res_config_settings_views.xml',
+        'views/pos_payment_method_views.xml',
         'data/product_data.xml',
     ],
     'assets': {
@@ -23,6 +24,7 @@
             'pos_customer_balance_ce/static/src/components/client_list_screen/client_list_screen.js',
             'pos_customer_balance_ce/static/src/components/client_list_screen/client_list_screen.xml',
             'pos_customer_balance_ce/static/src/components/client_list_screen/client_list_screen.scss',
+            'pos_customer_balance_ce/static/src/overrides/models/pos_store.js',
         ],
     },
     'installable': True,
