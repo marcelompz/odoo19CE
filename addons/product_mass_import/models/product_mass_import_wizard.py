@@ -55,7 +55,9 @@ class ProductMassImportWizard(models.TransientModel):
 
         # Headers
         headers = [
+            'Referencia Interna',
             'Nombre del Producto',
+            'Descripción para PdV',
             'Código de Barras',
             'Disponible en PdV',
             'Categoría de Producto',
@@ -70,7 +72,9 @@ class ProductMassImportWizard(models.TransientModel):
 
         # Example row
         example = [
+            'PROD-001',
             'Producto Ejemplo',
+            'Descripción para mostrar en punto de venta',
             '7701234567890',
             'VERDADERO',
             'Electrodomésticos',
@@ -122,19 +126,21 @@ class ProductMassImportWizard(models.TransientModel):
                     continue
 
                 error_msgs = []
-                name = str(row[0]).strip() if row[0] else False
-                barcode = str(row[1]).strip() if row[1] else False
-                available_in_pos = str(row[2]).upper() in ['VERDADERO', 'TRUE', '1', 'SI'] if row[2] is not None else True
-                categ_name = str(row[3]).strip() if row[3] else False
-                pos_categ_name = str(row[4]).strip() if row[4] else False
-                list_price = float(row[5]) if row[5] else 0.0
-                standard_price = float(row[6]) if row[6] else 0.0
-                qty_on_hand = float(row[7]) if row[7] else 0.0
+                default_code = str(row[0]).strip() if row[0] else False
+                name = str(row[1]).strip() if row[1] else False
+                pos_description = str(row[2]).strip() if row[2] else False
+                barcode = str(row[3]).strip() if row[3] else False
+                available_in_pos = str(row[4]).upper() in ['VERDADERO', 'TRUE', '1', 'SI'] if row[4] is not None else True
+                categ_name = str(row[5]).strip() if row[5] else False
+                pos_categ_name = str(row[6]).strip() if row[6] else False
+                list_price = float(row[7]) if row[7] else 0.0
+                standard_price = float(row[8]) if row[8] else 0.0
+                qty_on_hand = float(row[9]) if row[9] else 0.0
 
                 # Product type
                 product_type = 'product'
-                if row[8]:
-                    type_val = str(row[8]).lower()
+                if row[10]:
+                    type_val = str(row[10]).lower()
                     if type_val in ['consumible', 'consu']:
                         product_type = 'consu'
                     elif type_val in ['servicio', 'service']:
@@ -142,8 +148,8 @@ class ProductMassImportWizard(models.TransientModel):
 
                 # Tracking
                 tracking = 'none'
-                if row[9]:
-                    track_val = str(row[9]).lower()
+                if row[11]:
+                    track_val = str(row[11]).lower()
                     if 'lote' in track_val:
                         tracking = 'lot'
                     elif 'serie' in track_val:
@@ -156,6 +162,9 @@ class ProductMassImportWizard(models.TransientModel):
                         error_msgs.append(f"Código de barras duplicado: {existing.name}")
 
                 # Validate required fields
+                if not default_code:
+                    error_msgs.append("Referencia interna requerida")
+
                 if not name:
                     error_msgs.append("Nombre del producto requerido")
 
@@ -172,7 +181,9 @@ class ProductMassImportWizard(models.TransientModel):
 
                 preview_data.append((0, 0, {
                     'row_number': idx,
+                    'default_code': default_code or '',
                     'name': name or '',
+                    'pos_description': pos_description or '',
                     'barcode': barcode or '',
                     'available_in_pos': available_in_pos,
                     'categ_name': categ_name or '',
@@ -243,6 +254,7 @@ class ProductMassImportWizard(models.TransientModel):
 
             product_vals = {
                 'name': preview.name,
+                'default_code': preview.default_code,
                 'barcode': preview.barcode or False,
                 'list_price': preview.list_price,
                 'standard_price': preview.standard_price,
@@ -251,6 +263,9 @@ class ProductMassImportWizard(models.TransientModel):
                 'tracking': preview.tracking,
                 'available_in_pos': preview.available_in_pos,
             }
+
+            if preview.pos_description:
+                product_vals['description_sale'] = preview.pos_description
 
             if pos_categ_id:
                 product_vals['pos_categ_id'] = pos_categ_id
@@ -291,7 +306,9 @@ class ProductMassImportPreview(models.TransientModel):
 
     wizard_id = fields.Many2one('product.mass.import.wizard', string='Wizard', ondelete='cascade')
     row_number = fields.Integer(string='Fila')
+    default_code = fields.Char(string='Referencia Interna')
     name = fields.Char(string='Nombre del Producto')
+    pos_description = fields.Char(string='Descripción para PdV')
     barcode = fields.Char(string='Código de Barras')
     available_in_pos = fields.Boolean(string='Disponible en PdV')
     categ_name = fields.Char(string='Categoría de Producto')
