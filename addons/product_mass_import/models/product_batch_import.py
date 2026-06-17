@@ -190,12 +190,15 @@ class ProductBatchImportLine(models.Model):
     error_message = fields.Text(string='Errores', compute='_compute_validation', store=True)
     product_id = fields.Many2one('product.product', string='Producto Creado', readonly=True)
 
-    @api.depends('name', 'barcode', 'list_price', 'standard_price', 'qty_on_hand')
+    @api.depends('default_code', 'name', 'barcode', 'list_price', 'standard_price', 'qty_on_hand')
     def _compute_validation(self):
         for line in self:
             error_msgs = []
 
             # Check required fields
+            if not line.default_code:
+                error_msgs.append("Referencia interna requerida")
+
             if not line.name:
                 error_msgs.append("Nombre requerido")
 
