@@ -168,13 +168,14 @@ class ProductMassImportWizard(models.TransientModel):
                 if not name:
                     error_msgs.append("Nombre del producto requerido")
 
-                if list_price < 0:
+                # Validate numeric fields (only if provided)
+                if list_price is not None and list_price < 0:
                     error_msgs.append("Precio de venta no puede ser negativo")
 
-                if standard_price < 0:
+                if standard_price is not None and standard_price < 0:
                     error_msgs.append("Precio de costo no puede ser negativo")
 
-                if qty_on_hand < 0:
+                if qty_on_hand is not None and qty_on_hand < 0:
                     error_msgs.append("Cantidad no puede ser negativa")
 
                 error_str = ', '.join(error_msgs) if error_msgs else ''
