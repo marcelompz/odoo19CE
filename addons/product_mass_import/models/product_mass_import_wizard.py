@@ -2,10 +2,80 @@
 
 import base64
 import io
+import unicodedata
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
 import openpyxl
+
+
+def normalize_text(text):
+    """
+    Normaliza texto para comparación: minúsculas, sin tildes, sin espacios extra.
+    Ejemplo: "Artículos de Electricidad" → "articulos de electricidad"
+    """
+    if not text:
+        return ''
+    # Convertir a minúsculas
+    text = text.lower()
+    # Eliminar tildes
+    text = unicodedata.normalize('NFD', text)
+    text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
+    # Eliminar espacios extra y caracteres especiales
+    text = ' '.join(text.split())
+    return text
+
+
+def find_best_match_category(category_name, categories_env):
+    """
+    Busca una categoría existente con nombre similar (fuzzy match).
+    Retorna la categoría encontrada o None si no hay coincidencia.
+    
+    Estrategia:
+    1. Búsqueda exacta normalizada (ignora tildes/mayúsculas)
+    2. Búsqueda por contención (si el nombre normalizado está contenido)
+    """
+    if not category_name:
+        return None
+    
+    normalized_input = normalize_text(category_name)
+    
+    # Buscar todas las categorías y comparar normalizadas
+    all_categories = categories_env.search([])
+    
+    # 1. Búsqueda exacta normalizada
+    for categ in all_categories:
+        if normalize_text(categ.name) == normalized_input:
+            return categ
+    
+    # 2. Búsqueda por contención (si el input es más largo y contiene el nombre)
+    for categ in all_categories:
+        normalized_categ = normalize_text(categ.name)
+        if normalized_categ and normalized_categ in normalized_input:
+            return categ
+        if normalized_input and normalized_input in normalized_categ:
+            return categ
+    
+    # 3. Búsqueda con similaridad simple (ratio de caracteres comunes)
+    # Usamos una heurística simple: si comparten >80% de palabras
+    input_words = set(normalized_input.split())
+    for categ in all_categories:
+        normalized_categ = normalize_text(categ.name)
+        categ_words = set(normalized_categ.split())
+        
+        if not categ_words or not input_words:
+            continue
+        
+        # Calcular intersección
+        common_words = input_words & categ_words
+        total_words = input_words | categ_words
+        
+        if len(total_words) > 0:
+            similarity = len(common_words) / len(total_words)
+            if similarity >= 0.8:  # 80% de similitud
+                return categ
+    
+    return None
 
 
 class ProductMassImportWizard(models.TransientModel):
