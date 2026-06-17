@@ -22,7 +22,15 @@ patch(PosOrder.prototype, {
             let pricelist = null;
             if (this.models && this.models['product.pricelist']) {
                 const pricelists = this.models['product.pricelist'].getAll ? this.models['product.pricelist'].getAll() : this.models['product.pricelist'];
-                pricelist = pricelists.find(p => p.id === payment_method.pricelist_id[0]);
+                
+                let pl_id = payment_method.pricelist_id;
+                if (Array.isArray(pl_id)) {
+                    pl_id = pl_id[0];
+                } else if (typeof pl_id === 'object') {
+                    pl_id = pl_id.id;
+                }
+                
+                pricelist = pricelists.find(p => p.id === pl_id);
             }
             
             if (pricelist) {
@@ -42,7 +50,18 @@ patch(PosOrder.prototype, {
         if (payment_method && payment_method.pricelist_id) {
             // Revert pricelist if there are no other payment lines using this pricelist
             const remaining_paymentlines = this.payment_ids || [];
-            const has_pricelist_method = remaining_paymentlines.some(l => l.payment_method_id && l.payment_method_id.pricelist_id && l.payment_method_id.pricelist_id[0] === payment_method.pricelist_id[0]);
+            const has_pricelist_method = remaining_paymentlines.some(l => {
+                if (!l.payment_method_id || !l.payment_method_id.pricelist_id) return false;
+                let l_pl_id = l.payment_method_id.pricelist_id;
+                if (Array.isArray(l_pl_id)) l_pl_id = l_pl_id[0];
+                else if (typeof l_pl_id === 'object') l_pl_id = l_pl_id.id;
+                
+                let pm_pl_id = payment_method.pricelist_id;
+                if (Array.isArray(pm_pl_id)) pm_pl_id = pm_pl_id[0];
+                else if (typeof pm_pl_id === 'object') pm_pl_id = pm_pl_id.id;
+                
+                return l_pl_id === pm_pl_id;
+            });
             
             if (!has_pricelist_method && this.original_pricelist_id) {
                 let original_pricelist = null;
