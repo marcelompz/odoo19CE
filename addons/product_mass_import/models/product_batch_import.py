@@ -81,6 +81,7 @@ class ProductBatchImport(models.Model):
 
                 product_vals = {
                     'name': line.name,
+                    'default_code': line.default_code,
                     'barcode': line.barcode or False,
                     'list_price': line.list_price,
                     'standard_price': line.standard_price,
@@ -89,6 +90,9 @@ class ProductBatchImport(models.Model):
                     'tracking': line.tracking,
                     'available_in_pos': line.available_in_pos,
                 }
+
+                if line.pos_description:
+                    product_vals['description_sale'] = line.pos_description
 
                 if pos_categ_id:
                     product_vals['pos_categ_id'] = pos_categ_id
