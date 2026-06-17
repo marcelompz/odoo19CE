@@ -39,6 +39,7 @@
     'license': 'OPL-1',
     'depends': ['product', 'stock', 'point_of_sale'],
     'data': [
+        'data/sequence.xml',
         'security/ir.model.access.csv',
         'views/product_mass_import_wizard_views.xml',
         'views/product_batch_import_views.xml',
