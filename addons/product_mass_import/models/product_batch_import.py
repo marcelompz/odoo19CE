@@ -53,31 +53,44 @@ class ProductBatchImport(models.Model):
         return True
 
     def action_confirm(self):
-        """Confirm and create products"""
+        """Confirm and create products - OPTIMIZED with batch processing"""
         for batch in self:
             valid_lines = batch.line_ids.filtered(lambda l: l.is_valid)
             if not valid_lines:
                 raise UserError(_("No hay líneas válidas para procesar"))
 
-            created_products = []
-            products_to_quant = []
-
-            for line in valid_lines:
-                # Get or create product category
-                categ_id = self.env.ref('product.product_category_all').id
-                if line.categ_name:
-                    category = self.env['product.category'].search([('name', '=', line.categ_name)], limit=1)
+            # PRECARGAR CATEGORÍAS - Una sola consulta por categoría única
+            unique_categ_names = set(valid_lines.mapped('categ_name'))
+            categories_cache = {}
+            for categ_name in unique_categ_names:
+                if categ_name:
+                    category = self.env['product.category'].search([('name', '=', categ_name)], limit=1)
                     if not category:
-                        category = self.env['product.category'].create({'name': line.categ_name})
-                    categ_id = category.id
-
-                # Get or create POS category
-                pos_categ_id = False
-                if line.pos_categ_name and 'pos.category' in self.env:
-                    pos_category = self.env['pos.category'].search([('name', '=', line.pos_categ_name)], limit=1)
+                        category = self.env['product.category'].create({'name': categ_name})
+                    categories_cache[categ_name] = category
+            
+            # PRECARGAR CATEGORÍAS PdV
+            unique_pos_categ_names = set(valid_lines.mapped('pos_categ_name'))
+            pos_categories_cache = {}
+            for pos_categ_name in unique_pos_categ_names:
+                if pos_categ_name and 'pos.category' in self.env:
+                    pos_category = self.env['pos.category'].search([('name', '=', pos_categ_name)], limit=1)
                     if not pos_category:
-                        pos_category = self.env['pos.category'].create({'name': line.pos_categ_name})
-                    pos_categ_id = pos_category.id
+                        pos_category = self.env['pos.category'].create({'name': pos_categ_name})
+                    pos_categories_cache[pos_categ_name] = pos_category
+
+            # CREACIÓN MASIVA DE PRODUCTOS - Batch processing
+            product_vals_list = []
+            products_to_quant = []
+            
+            for line in valid_lines:
+                categ_id = self.env.ref('product.product_category_all').id
+                if line.categ_name and line.categ_name in categories_cache:
+                    categ_id = categories_cache[line.categ_name].id
+
+                pos_categ_id = False
+                if line.pos_categ_name and line.pos_categ_name in pos_categories_cache:
+                    pos_categ_id = pos_categories_cache[line.pos_categ_name].id
 
                 product_vals = {
                     'name': line.name,
@@ -97,20 +110,31 @@ class ProductBatchImport(models.Model):
                 if pos_categ_id:
                     product_vals['pos_categ_id'] = pos_categ_id
 
-                product = self.env['product.product'].create(product_vals)
-                created_products.append(product)
-
+                product_vals_list.append(product_vals)
+                
+                # Guardar referencia para inventario
                 if line.qty_on_hand > 0:
-                    products_to_quant.append((product, line.qty_on_hand))
+                    products_to_quant.append((len(product_vals_list) - 1, line.qty_on_hand))
 
-            # Apply inventory quantities
-            if products_to_quant:
-                for product, qty in products_to_quant:
-                    self.env['stock.quant'].with_context(inventory_mode=True).create({
+            # Creación masiva en una sola operación
+            created_products = self.env['product.product'].create(product_vals_list)
+
+            # APLICAR INVENTARIO MASIVO - Batch processing
+            if products_to_quant and batch.location_id:
+                quant_vals_list = []
+                for idx, qty in products_to_quant:
+                    product = created_products[idx]
+                    quant_vals_list.append({
                         'product_id': product.id,
                         'location_id': batch.location_id.id,
                         'inventory_quantity': qty,
-                    }).action_apply_inventory()
+                    })
+                
+                # Creación masiva de quants
+                quants = self.env['stock.quant'].with_context(inventory_mode=True).create(quant_vals_list)
+                # Aplicar inventario
+                for quant in quants:
+                    quant.action_apply_inventory()
 
             batch.state = 'done'
 
@@ -181,10 +205,10 @@ class ProductBatchImportLine(models.Model):
     standard_price = fields.Float(string='Precio de Costo', default=0.0)
     qty_on_hand = fields.Float(string='Cantidad a la Mano', default=0.0)
     product_type = fields.Selection([
-        ('product', 'Almacenable'),
-        ('consu', 'Consumible'),
+        ('consu', 'Bienes (Almacenable/Consumible)'),
         ('service', 'Servicio'),
-    ], string='Tipo de Producto', default='product')
+        ('combo', 'Combo'),
+    ], string='Tipo de Producto', default='consu')
     tracking = fields.Selection([
         ('none', 'Ninguno'),
         ('lot', 'Por Lote'),
@@ -212,7 +236,7 @@ class ProductBatchImportLine(models.Model):
                 if existing:
                     error_msgs.append(f"Código duplicado: {existing.name}")
 
-            # Check negative values
+            # Check negative values (only if provided, 0 is valid)
             if line.list_price < 0:
                 error_msgs.append("Precio de venta no puede ser negativo")
 
