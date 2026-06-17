@@ -5,10 +5,7 @@ import io
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 
-try:
-    import openpyxl
-except ImportError:
-    openpyxl = None
+import openpyxl
 
 
 class ProductMassImportWizard(models.TransientModel):
@@ -46,9 +43,6 @@ class ProductMassImportWizard(models.TransientModel):
 
     def action_download_template(self):
         """Download Excel template for product import"""
-        if not openpyxl:
-            raise UserError(_("La librería 'openpyxl' es necesaria. Ejecute: pip install openpyxl"))
-
         wb = openpyxl.Workbook()
         ws = wb.active
         ws.title = 'Plantilla Productos'
@@ -105,153 +99,178 @@ class ProductMassImportWizard(models.TransientModel):
         }
 
     def action_parse_excel(self):
-        """Parse Excel file and show preview"""
-        if not openpyxl:
-            raise UserError(_("La librería 'openpyxl' es necesaria. Ejecute: pip install openpyxl"))
-
+        """Parse Excel file and show preview - OPTIMIZED with batch barcode validation"""
         self.ensure_one()
         self.preview_ids.unlink()
 
-        try:
-            data = base64.b64decode(self.file_data)
-            wb = openpyxl.load_workbook(filename=io.BytesIO(data), data_only=True)
-            sheet = wb.active
+        data = base64.b64decode(self.file_data)
+        wb = openpyxl.load_workbook(filename=io.BytesIO(data), data_only=True)
+        sheet = wb.active
 
-            rows = list(sheet.iter_rows(min_row=2, values_only=True))
-            preview_data = []
-            errors = []
-
-            for idx, row in enumerate(rows, start=2):
-                if not row or not row[0]:
-                    continue
-
-                error_msgs = []
-                default_code = str(row[0]).strip() if row[0] else False
-                name = str(row[1]).strip() if row[1] else False
-                pos_description = str(row[2]).strip() if row[2] else False
-                barcode = str(row[3]).strip() if row[3] else False
-                available_in_pos = str(row[4]).upper() in ['VERDADERO', 'TRUE', '1', 'SI'] if row[4] is not None else True
-                categ_name = str(row[5]).strip() if row[5] else False
-                pos_categ_name = str(row[6]).strip() if row[6] else False
-                list_price = float(row[7]) if row[7] else 0.0
-                standard_price = float(row[8]) if row[8] else 0.0
-                qty_on_hand = float(row[9]) if row[9] else 0.0
-
-                # Product type
-                product_type = 'product'
-                if row[10]:
-                    type_val = str(row[10]).lower()
-                    if type_val in ['consumible', 'consu']:
-                        product_type = 'consu'
-                    elif type_val in ['servicio', 'service']:
-                        product_type = 'service'
-
-                # Tracking
-                tracking = 'none'
-                if row[11]:
-                    track_val = str(row[11]).lower()
-                    if 'lote' in track_val:
-                        tracking = 'lot'
-                    elif 'serie' in track_val:
-                        tracking = 'serial'
-
-                # Validate barcode uniqueness
+        rows = list(sheet.iter_rows(min_row=2, values_only=True))
+        
+        # OPTIMIZACIÓN: Extraer todos los barcodes del Excel y validar en una sola consulta
+        excel_barcodes = []
+        for row in rows:
+            if row and len(row) > 3 and row[3]:
+                barcode = str(row[3]).strip()
                 if barcode:
-                    existing = self.env['product.product'].search([('barcode', '=', barcode)], limit=1)
-                    if existing:
-                        error_msgs.append(f"Código de barras duplicado: {existing.name}")
+                    excel_barcodes.append(barcode)
+        
+        # Una sola consulta para todos los barcodes existentes
+        existing_barcodes = set()
+        if excel_barcodes:
+            existing_barcodes = set(self.env['product.product'].search(
+                [('barcode', 'in', excel_barcodes)]
+            ).mapped('barcode'))
+        
+        # Procesar filas y detectar duplicados internos
+        preview_data = []
+        seen_barcodes_in_file = set()
+        
+        for idx, row in enumerate(rows, start=2):
+            if not row or not row[1]:  # row[1] = name
+                continue
 
-                # Validate required fields
-                if not default_code:
-                    error_msgs.append("Referencia interna requerida")
+            error_msgs = []
+            default_code = str(row[0]).strip() if row[0] else False
+            name = str(row[1]).strip() if row[1] else False
+            pos_description = str(row[2]).strip() if row[2] else False
+            barcode = str(row[3]).strip() if row[3] else False
+            available_in_pos = str(row[4]).upper() in ['VERDADERO', 'TRUE', '1', 'SI'] if row[4] is not None else True
+            categ_name = str(row[5]).strip() if row[5] else False
+            pos_categ_name = str(row[6]).strip() if row[6] else False
+            list_price = float(row[7]) if row[7] else 0.0
+            standard_price = float(row[8]) if row[8] else 0.0
+            qty_on_hand = float(row[9]) if row[9] else 0.0
 
-                if not name:
-                    error_msgs.append("Nombre del producto requerido")
+            # Product type - ODoo 19: 'consu'=Goods, 'service'=Service, 'combo'=Combo
+            product_type = 'consu'  # Default a Bienes (incluye almacenables)
+            if row[10]:
+                type_val = str(row[10]).lower()
+                if type_val in ['servicio', 'service']:
+                    product_type = 'service'
+                elif type_val in ['combo']:
+                    product_type = 'combo'
+                # 'almacenable', 'storable', 'product' -> quedan como 'consu' (Goods)
 
-                # Validate numeric fields (only if provided)
-                if list_price is not None and list_price < 0:
-                    error_msgs.append("Precio de venta no puede ser negativo")
+            # Tracking
+            tracking = 'none'
+            if row[11]:
+                track_val = str(row[11]).lower()
+                if 'lote' in track_val:
+                    tracking = 'lot'
+                elif 'serie' in track_val:
+                    tracking = 'serial'
 
-                if standard_price is not None and standard_price < 0:
-                    error_msgs.append("Precio de costo no puede ser negativo")
+            # Validate barcode uniqueness in database
+            if barcode:
+                if barcode in existing_barcodes:
+                    error_msgs.append(f"Código de barras ya existe en Odoo")
+                # VALIDACIÓN DE DUPLICADOS INTERNOS
+                if barcode in seen_barcodes_in_file:
+                    error_msgs.append(f"Código de barras duplicado en este archivo")
+                seen_barcodes_in_file.add(barcode)
 
-                if qty_on_hand is not None and qty_on_hand < 0:
-                    error_msgs.append("Cantidad no puede ser negativa")
+            # Validate required fields
+            if not default_code:
+                error_msgs.append("Referencia interna requerida")
 
-                error_str = ', '.join(error_msgs) if error_msgs else ''
+            if not name:
+                error_msgs.append("Nombre del producto requerido")
 
-                preview_data.append((0, 0, {
-                    'row_number': idx,
-                    'default_code': default_code or '',
-                    'name': name or '',
-                    'pos_description': pos_description or '',
-                    'barcode': barcode or '',
-                    'available_in_pos': available_in_pos,
-                    'categ_name': categ_name or '',
-                    'pos_categ_name': pos_categ_name or '',
-                    'list_price': list_price,
-                    'standard_price': standard_price,
-                    'qty_on_hand': qty_on_hand,
-                    'product_type': product_type,
-                    'tracking': tracking,
-                    'error_message': error_str,
-                    'is_valid': len(error_msgs) == 0,
-                }))
+            # Validate numeric fields (only if provided)
+            if list_price is not None and list_price < 0:
+                error_msgs.append("Precio de venta no puede ser negativo")
 
-            self.write({
-                'state': 'preview',
-                'preview_ids': preview_data,
-            })
+            if standard_price is not None and standard_price < 0:
+                error_msgs.append("Precio de costo no puede ser negativo")
 
-            valid_count = sum(1 for p in preview_data if p[2]['is_valid'])
-            invalid_count = len(preview_data) - valid_count
+            if qty_on_hand is not None and qty_on_hand < 0:
+                error_msgs.append("Cantidad no puede ser negativa")
 
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': _('Análisis Completado'),
-                    'message': _('Productos válidos: %d, Con errores: %d') % (valid_count, invalid_count),
-                    'type': 'success' if invalid_count == 0 else 'warning',
-                    'sticky': invalid_count > 0,
-                }
+            error_str = ', '.join(error_msgs) if error_msgs else ''
+
+            preview_data.append((0, 0, {
+                'row_number': idx,
+                'default_code': default_code or '',
+                'name': name or '',
+                'pos_description': pos_description or '',
+                'barcode': barcode or '',
+                'available_in_pos': available_in_pos,
+                'categ_name': categ_name or '',
+                'pos_categ_name': pos_categ_name or '',
+                'list_price': list_price,
+                'standard_price': standard_price,
+                'qty_on_hand': qty_on_hand,
+                'product_type': product_type,
+                'tracking': tracking,
+                'error_message': error_str,
+                'is_valid': len(error_msgs) == 0,
+            }))
+
+        self.write({
+            'state': 'preview',
+            'preview_ids': preview_data,
+        })
+
+        valid_count = sum(1 for p in preview_data if p[2]['is_valid'])
+        invalid_count = len(preview_data) - valid_count
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Análisis Completado'),
+                'message': _('Productos válidos: %d, Con errores: %d') % (valid_count, invalid_count),
+                'type': 'success' if invalid_count == 0 else 'warning',
+                'sticky': invalid_count > 0,
             }
-
-        except Exception as e:
-            raise UserError(_("Error al procesar el archivo Excel: %s") % str(e))
+        }
 
     def action_confirm_import(self):
-        """Confirm import and create products"""
+        """Confirm import and create products - OPTIMIZED with batch processing"""
         self.ensure_one()
 
         if not self.preview_ids:
             raise UserError(_("No hay productos para importar"))
 
         valid_products = self.preview_ids.filtered(lambda p: p.is_valid)
-        invalid_products = self.preview_ids.filtered(lambda p: not p.is_valid)
-
         if not valid_products:
             raise UserError(_("No hay productos válidos para importar. Corrija los errores primero."))
 
-        created_products = []
-        products_to_quant = []
-
-        for preview in valid_products:
-            # Get or create product category
-            categ_id = self.env.ref('product.product_category_all').id
-            if preview.categ_name:
-                category = self.env['product.category'].search([('name', '=', preview.categ_name)], limit=1)
+        # PRECARGAR CATEGORÍAS - Una sola consulta por categoría única
+        unique_categ_names = set(valid_products.mapped('categ_name'))
+        categories_cache = {}
+        for categ_name in unique_categ_names:
+            if categ_name:
+                category = self.env['product.category'].search([('name', '=', categ_name)], limit=1)
                 if not category:
-                    category = self.env['product.category'].create({'name': preview.categ_name})
-                categ_id = category.id
-
-            # Get or create POS category
-            pos_categ_id = False
-            if preview.pos_categ_name and 'pos.category' in self.env:
-                pos_category = self.env['pos.category'].search([('name', '=', preview.pos_categ_name)], limit=1)
+                    category = self.env['product.category'].create({'name': categ_name})
+                categories_cache[categ_name] = category
+        
+        # PRECARGAR CATEGORÍAS PdV
+        unique_pos_categ_names = set(valid_products.mapped('pos_categ_name'))
+        pos_categories_cache = {}
+        for pos_categ_name in unique_pos_categ_names:
+            if pos_categ_name and 'pos.category' in self.env:
+                pos_category = self.env['pos.category'].search([('name', '=', pos_categ_name)], limit=1)
                 if not pos_category:
-                    pos_category = self.env['pos.category'].create({'name': preview.pos_categ_name})
-                pos_categ_id = pos_category.id
+                    pos_category = self.env['pos.category'].create({'name': pos_categ_name})
+                pos_categories_cache[pos_categ_name] = pos_category
+
+        # CREACIÓN MASIVA DE PRODUCTOS - Batch processing
+        product_vals_list = []
+        products_to_quant = []
+        
+        for preview in valid_products:
+            categ_id = self.env.ref('product.product_category_all').id
+            if preview.categ_name and preview.categ_name in categories_cache:
+                categ_id = categories_cache[preview.categ_name].id
+
+            pos_categ_id = False
+            if preview.pos_categ_name and preview.pos_categ_name in pos_categories_cache:
+                pos_categ_id = pos_categories_cache[preview.pos_categ_name].id
 
             product_vals = {
                 'name': preview.name,
@@ -271,20 +290,31 @@ class ProductMassImportWizard(models.TransientModel):
             if pos_categ_id:
                 product_vals['pos_categ_id'] = pos_categ_id
 
-            product = self.env['product.product'].create(product_vals)
-            created_products.append(product)
-
+            product_vals_list.append(product_vals)
+            
+            # Guardar referencia para inventario
             if preview.qty_on_hand > 0:
-                products_to_quant.append((product, preview.qty_on_hand))
+                products_to_quant.append((len(product_vals_list) - 1, preview.qty_on_hand))
 
-        # Apply inventory quantities
-        if products_to_quant:
-            for product, qty in products_to_quant:
-                self.env['stock.quant'].with_context(inventory_mode=True).create({
+        # Creación masiva en una sola operación
+        created_products = self.env['product.product'].create(product_vals_list)
+
+        # APLICAR INVENTARIO MASIVO - Batch processing
+        if products_to_quant and self.location_id:
+            quant_vals_list = []
+            for idx, qty in products_to_quant:
+                product = created_products[idx]
+                quant_vals_list.append({
                     'product_id': product.id,
                     'location_id': self.location_id.id,
                     'inventory_quantity': qty,
-                }).action_apply_inventory()
+                })
+            
+            # Creación masiva de quants
+            quants = self.env['stock.quant'].with_context(inventory_mode=True).create(quant_vals_list)
+            # Aplicar inventario
+            for quant in quants:
+                quant.action_apply_inventory()
 
         self.write({'state': 'done'})
 
@@ -318,14 +348,14 @@ class ProductMassImportPreview(models.TransientModel):
     standard_price = fields.Float(string='Precio de Costo')
     qty_on_hand = fields.Float(string='Cantidad a la Mano')
     product_type = fields.Selection([
-        ('product', 'Almacenable'),
-        ('consu', 'Consumible'),
+        ('consu', 'Bienes (Almacenable/Consumible)'),
         ('service', 'Servicio'),
-    ], string='Tipo de Producto')
+        ('combo', 'Combo'),
+    ], string='Tipo de Producto', default='consu')
     tracking = fields.Selection([
         ('none', 'Ninguno'),
         ('lot', 'Por Lote'),
         ('serial', 'Por Número de Serie'),
-    ], string='Trazabilidad')
+    ], string='Trazabilidad', default='none')
     error_message = fields.Text(string='Errores')
     is_valid = fields.Boolean(string='Válido')
