@@ -157,6 +157,74 @@ class ProductBatchImportLine(models.Model):
 | Product Type (service) | `service` | |
 | POS Category field | `pos_categ_id` | Many2one, not Many2many |
 | Stock assignment | `stock.quant` + `inventory_mode=True` | Native API since Odoo 16 |
+| List views | `<list>` | Renamed from `<tree>` in Odoo 19 |
+| List view reference | `list_view_ref` | Changed from `tree_view_ref` |
+
+### Odoo 19 View Syntax Changes
+
+**One2many field with custom list view:**
+
+```xml
+<!-- Odoo 19: Use 'list' not 'tree', and 'list_view_ref' in context -->
+<field name="preview_ids" 
+       context="{'list_view_ref': 'module.view_id'}" 
+       mode="list"/>
+```
+
+**List view definition:**
+
+```xml
+<record id="my_view_list" model="ir.ui.view">
+    <field name="model">my.model</field>
+    <field name="arch" type="xml">
+        <list create="0" delete="0" decoration-danger="error_field != False">
+            <!-- fields -->
+        </list>
+    </field>
+</record>
+```
+
+### Installing Python Dependencies in Docker
+
+**Manifest validation only (doesn't auto-install):**
+
+```python
+'external_dependencies': {'python': ['openpyxl']},
+```
+
+This only validates the package exists at install time - it does NOT install it.
+
+**For Docker containers with externally-managed Python (Debian/PEP 668):**
+
+```bash
+docker exec -it <container> pip install --break-system-packages openpyxl
+docker restart <container>
+```
+
+The `--break-system-packages` flag is needed because modern Debian-based containers use externally-managed Python environments.
+
+### View Loading Order
+
+XML files in `data` are loaded sequentially. If using view inheritance (`inherit_id`), ensure the parent view is defined in a file that loads **before** the child view, or define both views in the same file with the parent first.
+
+**Safe pattern:** Define custom list view and wizard form in the same file, with list view first:
+
+```xml
+<odoo>
+    <!-- 1. Define list view for preview model -->
+    <record id="preview_view_list" model="ir.ui.view">
+        <field name="model">product.mass.import.preview</field>
+        ...
+    </record>
+
+    <!-- 2. Define wizard form that references it -->
+    <record id="wizard_view_form" model="ir.ui.view">
+        <field name="model">product.mass.import.wizard</field>
+        ...
+        <field name="preview_ids" context="{'list_view_ref': 'module.preview_view_list'}" mode="list"/>
+    </record>
+</odoo>
+```
 
 ### Validation Checklist
 

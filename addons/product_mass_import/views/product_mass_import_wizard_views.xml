@@ -1,6 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- Preview List View -->
+    <record id="product_mass_import_preview_view_list" model="ir.ui.view">
+        <field name="name">product.mass.import.preview.list</field>
+        <field name="model">product.mass.import.preview</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0" decoration-danger="error_message != False">
+                <field name="row_number"/>
+                <field name="name"/>
+                <field name="barcode"/>
+                <field name="categ_name"/>
+                <field name="pos_categ_name"/>
+                <field name="list_price"/>
+                <field name="standard_price"/>
+                <field name="qty_on_hand"/>
+                <field name="product_type"/>
+                <field name="tracking"/>
+                <field name="available_in_pos"/>
+                <field name="error_message"/>
+                <field name="is_valid" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
     <!-- Wizard Form View -->
     <record id="product_mass_import_wizard_view_form" model="ir.ui.view">
         <field name="name">product.mass.import.wizard.form</field>
@@ -31,7 +54,7 @@
 
                     <notebook attrs="{'invisible': [('state', '!=', 'preview')]}">
                         <page string="Vista Previa de Productos" name="preview">
-                            <field name="preview_ids" mode="tree" options="{'header': false}"/>
+                            <field name="preview_ids" context="{'list_view_ref': 'product_mass_import.product_mass_import_preview_view_list'}" mode="list"/>
                         </page>
                     </notebook>
 
