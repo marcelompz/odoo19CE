@@ -39,20 +39,17 @@
                     </div>
                     <group>
                         <group>
-                            <field name="file_data" filename="filename" 
-                                   attrs="{'required': [('state', '=', 'draft')]}"/>
+                            <field name="file_data" filename="filename"/>
                             <field name="filename" invisible="1"/>
-                            <field name="location_id" 
-                                   attrs="{'required': [('state', 'in', ['draft', 'preview'])]}"/>
+                            <field name="location_id"/>
                         </group>
                         <group>
                             <field name="state" readonly="1"/>
-                            <field name="product_count" 
-                                   attrs="{'invisible': [('state', '!=', 'preview')]}"/>
+                            <field name="product_count" invisible="state != 'preview'"/>
                         </group>
                     </group>
 
-                    <notebook attrs="{'invisible': [('state', '!=', 'preview')]}">
+                    <notebook invisible="state != 'preview'">
                         <page string="Vista Previa de Productos" name="preview">
                             <field name="preview_ids" context="{'list_view_ref': 'product_mass_import.product_mass_import_preview_view_list'}" mode="list"/>
                         </page>
@@ -61,12 +58,12 @@
                     <footer>
                         <button name="action_parse_excel" type="object" string="Cargar Archivo"
                                 class="btn-primary" 
-                                attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                                invisible="state != 'draft'"/>
                         <button name="action_confirm_import" type="object" string="Confirmar Importación"
                                 class="btn-primary"
-                                attrs="{'invisible': [('state', '!=', 'preview')]}"/>
+                                invisible="state != 'preview'"/>
                         <button string="Cancelar" class="btn-secondary" special="cancel"
-                                attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                                invisible="state != 'draft'"/>
                     </footer>
                 </sheet>
             </form>

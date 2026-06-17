@@ -9,21 +9,21 @@
             <form string="Importación en Lote">
                 <header>
                     <button name="action_validate" type="object" string="Validar"
-                            class="btn-primary" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                            class="btn-primary" invisible="state != 'draft'"/>
                     <button name="action_confirm" type="object" string="Confirmar"
-                            class="btn-primary" attrs="{'invisible': [('state', '!=', 'validated')]}"/>
+                            class="btn-primary" invisible="state != 'validated'"/>
                     <button name="action_cancel" type="object" string="Cancelar"
-                            class="btn-secondary" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                            class="btn-secondary" invisible="state != 'draft'"/>
                     <button name="action_reset_draft" type="object" string="Volver a Borrador"
-                            class="btn-secondary" attrs="{'invisible': [('state', 'in', ['done', 'cancel'])]}"/>
+                            class="btn-secondary" invisible="state in ['done', 'cancel']"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,validated,done"/>
                 </header>
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <button name="action_add_line" type="object" 
+                        <button name="action_add_line" type="object"
                                 class="oe_stat_button" icon="fa-plus"
                                 string="Agregar Línea"
-                                attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                                invisible="state != 'draft'"/>
                     </div>
                     <div class="oe_title">
                         <h1>
@@ -32,9 +32,9 @@
                     </div>
                     <group>
                         <group>
-                            <field name="location_id" attrs="{'readonly': [('state', '!=', 'draft')]}"/>
-                            <field name="company_id" groups="base.group_multi_company" 
-                                   attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                            <field name="location_id" readonly="state != 'draft'"/>
+                            <field name="company_id" groups="base.group_multi_company"
+                                   readonly="state != 'draft'"/>
                         </group>
                         <group>
                             <field name="product_count" string="Total"/>
@@ -64,7 +64,7 @@
                                     <field name="product_id" readonly="1" optional="show"/>
                                     <button name="action_delete" type="object" string="Eliminar"
                                             class="btn-danger" icon="fa-trash"
-                                            attrs="{'invisible': [('parent.state', '!=', 'draft')]}"/>
+                                            invisible="parent.state != 'draft'"/>
                                 </list>
                             </field>
                         </page>
