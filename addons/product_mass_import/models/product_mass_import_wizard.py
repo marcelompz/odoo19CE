@@ -309,24 +309,46 @@ class ProductMassImportWizard(models.TransientModel):
         if not valid_products:
             raise UserError(_("No hay productos válidos para importar. Corrija los errores primero."))
 
-        # PRECARGAR CATEGORÍAS - Una sola consulta por categoría única
+        # PRECARGAR CATEGORÍAS - Una sola consulta con FUZZY MATCH
         unique_categ_names = set(valid_products.mapped('categ_name'))
         categories_cache = {}
+        categories_created = []
+        categories_matched = []
+        
         for categ_name in unique_categ_names:
             if categ_name:
-                category = self.env['product.category'].search([('name', '=', categ_name)], limit=1)
-                if not category:
+                # 1. Intentar fuzzy match con categorías existentes
+                category = find_best_match_category(categ_name, self.env['product.category'])
+                
+                if category:
+                    # Encontró categoría similar
+                    categories_matched.append((categ_name, category.name))
+                else:
+                    # No encontró similar, crear nueva
                     category = self.env['product.category'].create({'name': categ_name})
+                    categories_created.append(categ_name)
+                
                 categories_cache[categ_name] = category
-        
-        # PRECARGAR CATEGORÍAS PdV
+
+        # PRECARGAR CATEGORÍAS PdV con FUZZY MATCH
         unique_pos_categ_names = set(valid_products.mapped('pos_categ_name'))
         pos_categories_cache = {}
+        pos_categories_created = []
+        pos_categories_matched = []
+        
         for pos_categ_name in unique_pos_categ_names:
             if pos_categ_name and 'pos.category' in self.env:
-                pos_category = self.env['pos.category'].search([('name', '=', pos_categ_name)], limit=1)
-                if not pos_category:
+                # 1. Intentar fuzzy match con categorías existentes
+                pos_category = find_best_match_category(pos_categ_name, self.env['pos.category'])
+                
+                if pos_category:
+                    # Encontró categoría similar
+                    pos_categories_matched.append((pos_categ_name, pos_category.name))
+                else:
+                    # No encontró similar, crear nueva
                     pos_category = self.env['pos.category'].create({'name': pos_categ_name})
+                    pos_categories_created.append(pos_categ_name)
+                
                 pos_categories_cache[pos_categ_name] = pos_category
 
         # CREACIÓN MASIVA DE PRODUCTOS - Batch processing
