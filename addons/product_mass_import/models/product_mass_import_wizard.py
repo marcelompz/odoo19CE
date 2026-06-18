@@ -287,6 +287,7 @@ class ProductMassImportWizard(models.TransientModel):
         valid_count = sum(1 for p in preview_data if p[2]['is_valid'])
         invalid_count = len(preview_data) - valid_count
 
+        # Mostrar notificación y mantener wizard abierto para mostrar botón "Confirmar"
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -295,7 +296,8 @@ class ProductMassImportWizard(models.TransientModel):
                 'message': _('Productos válidos: %d, Con errores: %d') % (valid_count, invalid_count),
                 'type': 'success' if invalid_count == 0 else 'warning',
                 'sticky': invalid_count > 0,
-            }
+                'fadeout': 'quick' if invalid_count == 0 else 'slow',
+            },
         }
 
     def action_confirm_import(self):
