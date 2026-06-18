@@ -1,8 +1,8 @@
 ---
 name: odoo-mass-import-module
-description: Create Odoo modules for mass product import with Excel and manual batch entry, including stock quantity assignment with batch processing optimizations
+description: Create Odoo modules for mass product import with Excel and manual batch entry, including stock quantity assignment, batch processing optimizations, and fuzzy category matching
 source: auto-skill
-extracted_at: '2026-06-17T17:30:44.292Z'
+extracted_at: '2026-06-18T00:12:39.731Z'
 ---
 
 ## Odoo Mass Import Module Creation

@@ -230,6 +230,14 @@ Crossnexion E.A.S. - https://www.crossnexion.com
 
 ## Historial de Versiones
 
+### 19.0.1.2.0 (2026-06-17)
+- ✅ **NEW**: Fuzzy match para categorías (evita duplicados por errores de tipeo)
+- ✅ **NEW**: Notificación detallada de categorías reutilizadas/creadas
+- 🔧 Algoritmo de matching:
+  - Búsqueda exacta normalizada (ignora tildes/mayúsculas)
+  - Búsqueda por contención de palabras
+  - Similaridad de 80% en palabras compartidas
+
 ### 19.0.1.1.0 (2026-06-17)
 - 🔥 **OPTIMIZACIÓN**: Batch processing para creación masiva de productos
 - 🔥 **OPTIMIZACIÓN**: Validación de barcodes en una sola consulta SQL
