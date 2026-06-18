@@ -9,7 +9,7 @@ Módulo para Odoo 19 que permite la creación masiva de productos con asignació
 - **Creación en lote en Odoo**: Entrada manual con validación en tiempo real
 - **Asignación de stock inicial**: Aplica cantidades automáticamente vía `stock.quant`
 - **Validaciones previas**: Detecta errores antes de crear productos
-- **Categorías automáticas**: Crea categorías de producto y PdV si no existen
+- **Categorías automáticas con Fuzzy Match**: Reutiliza categorías existentes similares (evita duplicados por errores de tipeo)
 - **OPTIMIZADO**: Batch processing para importar 1000+ productos sin timeout
 
 ## Optimizaciones de Rendimiento (v19.0.1.1.0+)
@@ -19,11 +19,28 @@ Este módulo implementa **batch processing** para evitar el problema N+1:
 | Operación | Antes | Ahora |
 |-----------|-------|-------|
 | Validación de barcodes | 1 consulta por fila | 1 consulta para TODAS las filas |
-| Creación de categorías | 1 consulta por categoría | Cache en memoria |
+| Creación de categorías | 1 consulta por categoría | Cache en memoria + Fuzzy Match |
 | Creación de productos | 1 INSERT por producto | 1 INSERT para TODOS los productos |
 | Creación de inventario | 1 INSERT por quant | 1 INSERT para TODOS los quants |
 
 **Resultado**: Importación de 10,000 productos en ~5-10 segundos (vs. timeout en 2-3 minutos antes).
+
+## Fuzzy Match para Categorías (v19.0.1.2.0+)
+
+El módulo **detecta categorías similares** y las reutiliza en lugar de crear duplicados:
+
+| Categoría en Excel | Categoría Existente | Resultado |
+|-------------------|---------------------|-----------|
+| `Artículos de electricidad` | `Articulos de Electricidad` | ✅ Reutiliza existente (ignora tildes) |
+| `Herramientas electricas` | `Herramientas Eléctricas` | ✅ Reutiliza existente (ignora tildes) |
+| `Hogar y Jardín` | `Hogar` | ✅ Reutiliza existente (contiene palabra) |
+| `Deportes Acuáticos` | `Deportes` | ✅ Reutiliza existente (80% similitud) |
+| `Electrónica Pro` | `Electrónica` | ✅ Reutiliza existente (contiene palabra) |
+| `Nueva Categoría XYZ` | (ninguna similar) | 🆕 Crea nueva categoría |
+
+**Al finalizar la importación**, el módulo muestra:
+- 📁 Categorías reutilizadas (con nombre original → nombre encontrado)
+- 📁 Categorías creadas (nuevas)
 
 ## Requisitos
 
