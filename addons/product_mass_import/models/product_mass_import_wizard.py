@@ -401,7 +401,7 @@ class ProductMassImportWizard(models.TransientModel):
                     'location_id': self.location_id.id,
                     'inventory_quantity': qty,
                 })
-            
+
             # Creación masiva de quants
             quants = self.env['stock.quant'].with_context(inventory_mode=True).create(quant_vals_list)
             # Aplicar inventario
@@ -410,14 +410,26 @@ class ProductMassImportWizard(models.TransientModel):
 
         self.write({'state': 'done'})
 
+        # Construir mensaje detallado
+        message = _('Se crearon %d productos exitosamente.') % len(created_products)
+        
+        if categories_matched:
+            matched_list = ', '.join([f'"{orig}" → "{match}"' for orig, match in categories_matched])
+            message += f'\n\n📁 Categorías reutilizadas (fuzzy match): {matched_list}'
+        
+        if categories_created:
+            created_list = ', '.join(categories_created)
+            message += f'\n📁 Categorías creadas: {created_list}'
+
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
                 'title': _('Proceso Completado'),
-                'message': _('Se crearon %d productos exitosamente.') % len(created_products),
+                'message': message,
                 'type': 'success',
                 'next': {'type': 'ir.actions.act_window_close'},
+                'sticky': True,  # Mantener notificación visible para que el usuario vea el detalle
             }
         }
 
