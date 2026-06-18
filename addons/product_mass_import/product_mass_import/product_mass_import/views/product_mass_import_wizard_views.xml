@@ -51,7 +51,7 @@
                     </group>
 
                     <notebook>
-                        <page string="Vista Previa" name="preview" invisible="state != 'preview'">
+                        <page string="Vista Previa" name="preview" attrs="{'invisible': [('state', '!=', 'preview')]}">
                             <field name="preview_ids">
                                 <list create="0" delete="0" decoration-danger="error_message != False">
                                     <field name="row_number"/>
@@ -76,12 +76,11 @@
                     <footer>
                         <button name="action_parse_excel" type="object" string="Cargar Archivo"
                                 class="btn-primary" 
-                                invisible="state != 'draft'"/>
+                                attrs="{'invisible': [('state', '!=', 'draft')]}"/>
                         <button name="action_confirm_import" type="object" string="Confirmar Importación"
                                 class="btn-primary"
-                                invisible="state != 'preview'"/>
-                        <button string="Cancelar" class="btn-secondary" special="cancel"
-                                invisible="state == 'done'"/>
+                                attrs="{'invisible': [('state', '!=', 'preview')]}"/>
+                        <button string="Cancelar" class="btn-secondary" special="cancel"/>
                     </footer>
                 </sheet>
             </form>

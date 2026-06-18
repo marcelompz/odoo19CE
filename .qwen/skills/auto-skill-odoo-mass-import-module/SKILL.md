@@ -349,8 +349,8 @@ elif row_type.lower() in ['combo']:
 
 ```xml
 <!-- Odoo 19: Use 'list' not 'tree', and 'list_view_ref' in context -->
-<field name="preview_ids" 
-       context="{'list_view_ref': 'module.view_id'}" 
+<field name="preview_ids"
+       context="{'list_view_ref': 'module.view_id'}"
        mode="list"/>
 ```
 
@@ -366,6 +366,70 @@ elif row_type.lower() in ['combo']:
     </field>
 </record>
 ```
+
+**Wizard Button Visibility (CRITICAL for Odoo 19):**
+
+```xml
+<!-- ✅ CORRECT - Use attrs for dynamic button visibility -->
+<footer>
+    <button name="action_parse" type="object" string="Load"
+            class="btn-primary"
+            attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+    <button name="action_confirm" type="object" string="Confirm"
+            class="btn-primary"
+            attrs="{'invisible': [('state', '!=', 'preview')]}"/>
+</footer>
+
+<!-- ❌ May not work reliably in Odoo 19 wizards -->
+<button invisible="state != 'preview'"/>
+```
+
+**Page visibility with attrs:**
+
+```xml
+<notebook>
+    <page string="Preview" name="preview" 
+          attrs="{'invisible': [('state', '!=', 'preview')]}">
+        <field name="preview_ids"/>
+    </page>
+</notebook>
+```
+
+**Wizard State Change Notification:**
+
+```python
+def action_parse_excel(self):
+    self.write({
+        'state': 'preview',
+        'preview_ids': preview_data,
+    })
+    
+    # Return notification WITHOUT closing wizard
+    return {
+        'type': 'ir.actions.client',
+        'tag': 'display_notification',
+        'params': {
+            'title': _('Analysis Complete'),
+            'message': _('Valid: %d, Errors: %d') % (valid, invalid),
+            'type': 'success',
+            'sticky': False,  # Don't block UI
+            'fadeout': 'quick',
+            'forceReload': True,  # Force view refresh to show new buttons
+        },
+    }
+```
+
+**Common Issue: Buttons don't appear after state change**
+
+**Symptoms:** After clicking "Load File", the "Confirm Import" button doesn't appear even though `state` was written to 'preview'.
+
+**Solutions (try in order):**
+1. Use `attrs="{'invisible': [...]}"` instead of `invisible="..."`
+2. Add `forceReload: True` to notification params
+3. Set `sticky: False` so notification doesn't block UI
+4. Make state field visible in view for debugging
+5. Hard refresh browser (Ctrl+Shift+R) to clear view cache
+6. Copy updated XML to container AND restart Odoo: `docker cp <file> <container>:/path && docker restart <container>`
 
 ### Installing Python Dependencies in Docker
 
