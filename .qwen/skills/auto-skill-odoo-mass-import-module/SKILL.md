@@ -29,7 +29,7 @@ existing_barcodes = set(self.env['product.product'].search(
 
 # 2. Batch cache categories
 unique_categ_names = set(rows.mapped('categ_name'))
-categories_cache = {name: self.env['product.category'].search([('name', '=', name)], limit=1) 
+categories_cache = {name: self.env['product.category'].search([('name', '=', name)], limit=1)
                     for name in unique_categ_names if name}
 
 # 3. Batch create all products
@@ -37,7 +37,7 @@ product_vals_list = [build_vals(row) for row in valid_rows]
 created_products = self.env['product.product'].create(product_vals_list)
 
 # 4. Batch create inventory adjustments
-quant_vals_list = [{'product_id': p.id, 'location_id': loc.id, 'inventory_quantity': qty} 
+quant_vals_list = [{'product_id': p.id, 'location_id': loc.id, 'inventory_quantity': qty}
                    for p, qty in products_to_quant]
 quants = self.env['stock.quant'].with_context(inventory_mode=True).create(quant_vals_list)
 for quant in quants:
@@ -47,6 +47,116 @@ for quant in quants:
 **Expected Performance:**
 - N+1 approach: ~30-60 seconds for 1,000 products
 - Batch approach: ~2-5 seconds for 1,000 products
+
+### Fuzzy Match for Categories (Avoid Duplicates)
+
+**Problem:** User imports "Artículos de electricidad" but "Articulos de Electricidad" already exists → creates duplicate.
+
+**Solution:** Implement fuzzy matching with normalization:
+
+```python
+import unicodedata
+
+def normalize_text(text):
+    """
+    Normalize text: lowercase, remove accents, strip extra spaces.
+    Example: "Artículos de Electricidad" → "articulos de electricidad"
+    """
+    if not text:
+        return ''
+    text = text.lower()
+    text = unicodedata.normalize('NFD', text)
+    text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
+    text = ' '.join(text.split())
+    return text
+
+
+def find_best_match_category(category_name, categories_env):
+    """
+    Find existing category with similar name (fuzzy match).
+    Returns category or None.
+    
+    Strategies (in order):
+    1. Exact match (normalized)
+    2. Containment (one contains the other)
+    3. Word similarity (≥80% common words)
+    """
+    if not category_name:
+        return None
+    
+    normalized_input = normalize_text(category_name)
+    all_categories = categories_env.search([])
+    
+    # 1. Exact normalized match
+    for categ in all_categories:
+        if normalize_text(categ.name) == normalized_input:
+            return categ
+    
+    # 2. Containment match
+    for categ in all_categories:
+        normalized_categ = normalize_text(categ.name)
+        if normalized_categ in normalized_input or normalized_input in normalized_categ:
+            return categ
+    
+    # 3. Word similarity (80% threshold)
+    input_words = set(normalized_input.split())
+    for categ in all_categories:
+        normalized_categ = normalize_text(categ.name)
+        categ_words = set(normalized_categ.split())
+        
+        if not categ_words or not input_words:
+            continue
+        
+        common_words = input_words & categ_words
+        total_words = input_words | categ_words
+        
+        if len(total_words) > 0:
+            similarity = len(common_words) / len(total_words)
+            if similarity >= 0.8:
+                return categ
+    
+    return None
+```
+
+**Usage in import:**
+
+```python
+# Before creating category, check for fuzzy match
+category = find_best_match_category(categ_name, self.env['product.category'])
+
+if category:
+    # Reuse existing (avoid duplicate)
+    categories_matched.append((categ_name, category.name))
+else:
+    # Create new
+    category = self.env['product.category'].create({'name': categ_name})
+    categories_created.append(categ_name)
+
+categories_cache[categ_name] = category
+```
+
+**Match Examples:**
+
+| Excel Input | Existing Category | Match Reason |
+|-------------|-------------------|--------------|
+| `Artículos de electricidad` | `Articulos de Electricidad` | Exact normalized (accents ignored) |
+| `Hogar y Jardín` | `Hogar` | Containment |
+| `Deportes Acuáticos` | `Deportes` | 80% word similarity |
+| `Electrónica Pro` | `Electrónica` | Containment |
+| `Nueva Cat XYZ` | (none) | No match → Create new |
+
+**Post-import notification:**
+
+```python
+message = f"Se crearon {count} productos exitosamente."
+
+if categories_matched:
+    matched_list = ', '.join([f'"{orig}" → "{match}"' for orig, match in categories_matched])
+    message += f'\n\n📁 Categorías reutilizadas: {matched_list}'
+
+if categories_created:
+    message += f'\n📁 Categorías creadas: {", ".join(categories_created)}'
+```
 
 ### Module Structure
 
@@ -191,13 +301,47 @@ class ProductBatchImportLine(models.Model):
 
 | Field/Concept | Odoo 19 Value | Notes |
 |---------------|---------------|-------|
-| Product Type (storable) | `product` | Not `consu` - that's for consumables |
-| Product Type (consumable) | `consu` | |
-| Product Type (service) | `service` | |
+| Product Type (goods/storable) | `consu` | **CHANGED in Odoo 19**: `consu` = "Goods" (includes storable) |
+| Product Type (consumable) | `consu` | Same as storable - both are "Goods" |
+| Product Type (service) | `service` | Non-tangible products |
+| Product Type (combo) | `combo` | Combined products (new in Odoo 19) |
 | POS Category field | `pos_categ_id` | Many2one, not Many2many |
 | Stock assignment | `stock.quant` + `inventory_mode=True` | Native API since Odoo 16 |
 | List views | `<list>` | Renamed from `<tree>` in Odoo 19 |
 | List view reference | `list_view_ref` | Changed from `tree_view_ref` |
+| View attrs syntax | `invisible="field != 'value'"` | **CHANGED**: Old `attrs="{'invisible': [...]}"` deprecated |
+
+**Odoo 19 Product Type Note:**
+
+In Odoo 18/19, the `type` field structure changed:
+
+```python
+# Odoo 17 and earlier:
+type = Selection([('product', 'Storable'), ('consu', 'Consumable'), ('service', 'Service')])
+
+# Odoo 18/19:
+type = Selection([('consu', 'Goods'), ('service', 'Service'), ('combo', 'Combo')])
+```
+
+The `is_stored` boolean field that existed in intermediate versions was removed. Now:
+- **`consu` (Goods)**: Includes both storable and consumable physical products
+- **`service`**: Non-tangible services
+- **`combo`**: Combined products
+
+The distinction between "storable" and "consumable" is now handled via category configurations and routes, not the `type` field.
+
+**Correct mapping for imports:**
+
+```python
+# Map Excel values to Odoo 19 type field
+product_type = 'consu'  # Default to "Goods" (includes storable)
+
+if row_type.lower() in ['servicio', 'service']:
+    product_type = 'service'
+elif row_type.lower() in ['combo']:
+    product_type = 'combo'
+# 'almacenable', 'storable', 'product', 'consumible' → all map to 'consu'
+```
 
 ### Odoo 19 View Syntax Changes
 
@@ -267,16 +411,18 @@ XML files in `data` are loaded sequentially. If using view inheritance (`inherit
 
 ### Validation Checklist
 
-- [ ] Barcode uniqueness check before creation
-- [ ] **Internal duplicate check** (same barcode appears twice in Excel file)
+- [ ] Barcode uniqueness check against database
+- [ ] **Internal duplicate check** (same barcode appears twice in Excel file - use `seen_barcodes_in_file` set)
 - [ ] Required field validation (name, reference)
-- [ ] Negative value prevention
+- [ ] Negative value prevention (prices, quantities)
 - [ ] Preview state before confirming
 - [ ] Error messages displayed in list view (decoration-danger)
-- [ ] Category auto-creation if not exists
+- [ ] **Category fuzzy match** (avoid duplicates due to typos/accents)
+- [ ] Category auto-creation if no match found
 - [ ] Stock only applied when qty > 0
 - [ ] Security access for stock user and manager groups
 - [ ] **Batch processing for 1000+ imports**
+- [ ] **Post-import notification** with categories matched/created details
 
 ### Menu Placement
 
