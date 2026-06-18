@@ -358,8 +358,12 @@ class ProductMassImportWizard(models.TransientModel):
         product_vals_list = []
         products_to_quant = []
         
+        # Buscar categoría por defecto (si no existe, usar la primera disponible)
+        default_categ = self.env['product.category'].search([], limit=1, order='id')
+        default_categ_id = default_categ.id if default_categ else False
+        
         for preview in valid_products:
-            categ_id = self.env.ref('product.product_category_all').id
+            categ_id = default_categ_id
             if preview.categ_name and preview.categ_name in categories_cache:
                 categ_id = categories_cache[preview.categ_name].id
 
