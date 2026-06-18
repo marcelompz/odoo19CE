@@ -1,7 +1,65 @@
 # -*- coding: utf-8 -*-
 
+import unicodedata
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError
+
+
+def normalize_text(text):
+    """
+    Normaliza texto para comparación: minúsculas, sin tildes, sin espacios extra.
+    Ejemplo: "Artículos de Electricidad" → "articulos de electricidad"
+    """
+    if not text:
+        return ''
+    text = text.lower()
+    text = unicodedata.normalize('NFD', text)
+    text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
+    text = ' '.join(text.split())
+    return text
+
+
+def find_best_match_category(category_name, categories_env):
+    """
+    Busca una categoría existente con nombre similar (fuzzy match).
+    """
+    if not category_name:
+        return None
+    
+    normalized_input = normalize_text(category_name)
+    all_categories = categories_env.search([])
+    
+    # 1. Búsqueda exacta normalizada
+    for categ in all_categories:
+        if normalize_text(categ.name) == normalized_input:
+            return categ
+    
+    # 2. Búsqueda por contención
+    for categ in all_categories:
+        normalized_categ = normalize_text(categ.name)
+        if normalized_categ and normalized_categ in normalized_input:
+            return categ
+        if normalized_input and normalized_input in normalized_categ:
+            return categ
+    
+    # 3. Búsqueda por similaridad de palabras (80%)
+    input_words = set(normalized_input.split())
+    for categ in all_categories:
+        normalized_categ = normalize_text(categ.name)
+        categ_words = set(normalized_categ.split())
+        
+        if not categ_words or not input_words:
+            continue
+        
+        common_words = input_words & categ_words
+        total_words = input_words | categ_words
+        
+        if len(total_words) > 0:
+            similarity = len(common_words) / len(total_words)
+            if similarity >= 0.8:
+                return categ
+    
+    return None
 
 
 class ProductBatchImport(models.Model):
@@ -53,30 +111,52 @@ class ProductBatchImport(models.Model):
         return True
 
     def action_confirm(self):
-        """Confirm and create products - OPTIMIZED with batch processing"""
+        """Confirm and create products - OPTIMIZED with batch processing + FUZZY MATCH"""
         for batch in self:
             valid_lines = batch.line_ids.filtered(lambda l: l.is_valid)
             if not valid_lines:
                 raise UserError(_("No hay líneas válidas para procesar"))
 
-            # PRECARGAR CATEGORÍAS - Una sola consulta por categoría única
+            # PRECARGAR CATEGORÍAS - Una sola consulta con FUZZY MATCH
             unique_categ_names = set(valid_lines.mapped('categ_name'))
             categories_cache = {}
+            categories_created = []
+            categories_matched = []
+            
             for categ_name in unique_categ_names:
                 if categ_name:
-                    category = self.env['product.category'].search([('name', '=', categ_name)], limit=1)
-                    if not category:
+                    # 1. Intentar fuzzy match con categorías existentes
+                    category = find_best_match_category(categ_name, self.env['product.category'])
+                    
+                    if category:
+                        # Encontró categoría similar
+                        categories_matched.append((categ_name, category.name))
+                    else:
+                        # No encontró similar, crear nueva
                         category = self.env['product.category'].create({'name': categ_name})
+                        categories_created.append(categ_name)
+                    
                     categories_cache[categ_name] = category
-            
-            # PRECARGAR CATEGORÍAS PdV
+
+            # PRECARGAR CATEGORÍAS PdV con FUZZY MATCH
             unique_pos_categ_names = set(valid_lines.mapped('pos_categ_name'))
             pos_categories_cache = {}
+            pos_categories_created = []
+            pos_categories_matched = []
+            
             for pos_categ_name in unique_pos_categ_names:
                 if pos_categ_name and 'pos.category' in self.env:
-                    pos_category = self.env['pos.category'].search([('name', '=', pos_categ_name)], limit=1)
-                    if not pos_category:
+                    # 1. Intentar fuzzy match con categorías existentes
+                    pos_category = find_best_match_category(pos_categ_name, self.env['pos.category'])
+                    
+                    if pos_category:
+                        # Encontró categoría similar
+                        pos_categories_matched.append((pos_categ_name, pos_category.name))
+                    else:
+                        # No encontró similar, crear nueva
                         pos_category = self.env['pos.category'].create({'name': pos_categ_name})
+                        pos_categories_created.append(pos_categ_name)
+                    
                     pos_categories_cache[pos_categ_name] = pos_category
 
             # CREACIÓN MASIVA DE PRODUCTOS - Batch processing
@@ -138,8 +218,26 @@ class ProductBatchImport(models.Model):
 
             batch.state = 'done'
 
-            # Post message
-            batch.message_post(body=_('Se crearon %d productos exitosamente.') % len(created_products))
+            # Post message con detalle de categorías
+            message = _('Se crearon %d productos exitosamente.') % len(created_products)
+            
+            if categories_matched:
+                matched_list = ', '.join([f'"{orig}" → "{match}"' for orig, match in categories_matched])
+                message += f'\n\n📁 Categorías reutilizadas (fuzzy match): {matched_list}'
+            
+            if categories_created:
+                created_list = ', '.join(categories_created)
+                message += f'\n📁 Categorías creadas: {created_list}'
+            
+            if pos_categories_matched:
+                matched_list = ', '.join([f'"{orig}" → "{match}"' for orig, match in pos_categories_matched])
+                message += f'\n🏪 Categorías PdV reutilizadas: {matched_list}'
+            
+            if pos_categories_created:
+                created_list = ', '.join(pos_categories_created)
+                message += f'\n🏪 Categorías PdV creadas: {created_list}'
+
+            batch.message_post(body=message)
 
         return True
 
