@@ -295,8 +295,9 @@ class ProductMassImportWizard(models.TransientModel):
                 'title': _('Análisis Completado'),
                 'message': _('Productos válidos: %d, Con errores: %d') % (valid_count, invalid_count),
                 'type': 'success' if invalid_count == 0 else 'warning',
-                'sticky': invalid_count > 0,
-                'fadeout': 'quick' if invalid_count == 0 else 'slow',
+                'sticky': False,  # No mantener visible para permitir click en Confirmar
+                'fadeout': 'quick',
+                'forceReload': True,  # Forzar recarga para actualizar botones
             },
         }
 
