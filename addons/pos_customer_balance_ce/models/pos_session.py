@@ -17,6 +17,7 @@ class PosSession(models.Model):
             
         return loaded_data
 
+
     def _get_sale_key(self, base_line):
         key = super()._get_sale_key(base_line)
         settle_due_product = self.env.ref('pos_customer_balance_ce.product_product_settle_due', raise_if_not_found=False)
