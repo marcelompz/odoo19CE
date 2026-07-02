@@ -178,31 +178,33 @@ class ExcelRecipeImportWizard(models.TransientModel):
     def _get_or_create_product(self, name, category_name=None, available_in_pos=False, cost=0.0, uom_name='Unidades'):
         if not name or str(name).lower() == 'nan':
             return False
-            
+
         name = str(name).strip()
         product = self.env['product.product'].search([('name', '=', name)], limit=1)
-        
+
         if not product:
             uom = self._get_or_create_uom(uom_name)
-            vals = {
+            # Create product.template first
+            template_vals = {
                 'name': name,
-                'detailed_type': 'product', # Almacenable
                 'standard_price': cost,
                 'uom_id': uom.id if uom else False,
-                'uom_po_id': uom.id if uom else False,
                 'available_in_pos': available_in_pos,
             }
             if category_name:
                 category = self.env['product.category'].search([('name', '=', category_name)], limit=1)
                 if not category:
                     category = self.env['product.category'].create({'name': category_name})
-                vals['categ_id'] = category.id
+                template_vals['categ_id'] = category.id
+
+            template = self.env['product.template'].create(template_vals)
             
-            product = self.env['product.product'].create(vals)
-            
+            # Get the created product variant
+            product = template.product_variant_id
+
             if available_in_pos:
-                product.product_tmpl_id.is_pos_bom = True
-                
+                template.is_pos_bom = True
+
         return product
 
     def _get_or_create_product_from_materia_prima(self, row):
@@ -239,11 +241,9 @@ class ExcelRecipeImportWizard(models.TransientModel):
             vals = {
                 'name': name,
                 'default_code': default_code or False,
-                'detailed_type': 'product',
                 'standard_price': cost,
                 'list_price': list_price,
                 'uom_id': uom.id if uom else False,
-                'uom_po_id': uom.id if uom else False,
                 'available_in_pos': available_in_pos,
                 'tracking': tracking,
             }
@@ -371,7 +371,7 @@ class ExcelRecipeImportWizard(models.TransientModel):
         else:
             final_message = _("❌ **Validación fallida**\n\n") + final_message
         
-        # Return action to show popup
+        # Return action to show popup (don't close window, let user click Import)
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
@@ -380,7 +380,6 @@ class ExcelRecipeImportWizard(models.TransientModel):
                 'message': final_message,
                 'sticky': len(errors) > 0,
                 'type': 'success' if is_valid else 'danger',
-                'next': {'type': 'ir.actions.act_window_close'}
             }
         }
 
@@ -534,16 +533,16 @@ class ExcelRecipeImportWizard(models.TransientModel):
             imported_sheets.append(f"POS BoM ({pos_bom_count} recetas)")
 
         # Build success message
-        message = _("**Importación Exitosa**\n\n")
-        message += _("Se han importado las siguientes sheets:\n")
+        message = "**Importación Exitosa**\n\n"
+        message += "Se han importado las siguientes sheets:\n"
         for sheet in imported_sheets:
             message += f"  • {sheet}\n"
-        
+
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'title': _('Importación Exitosa'),
+                'title': 'Importación Exitosa',
                 'message': message,
                 'sticky': False,
                 'type': 'success',
