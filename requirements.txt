@@ -1,8 +1,18 @@
-dropbox
-pyncclient
-nextcloud-api-wrapper
-boto3
-paramiko
-dnspython
-pandas
-openpyxl
+# Odoo 19 CE - Python Dependencies
+# ==================================
+
+# Backup modules
+dropbox>=12.0          # Dropbox backup support
+boto3>=1.26            # AWS S3 backup support
+paramiko>=3.0          # SFTP backup support
+nextcloud-api-wrapper  # Nextcloud backup support
+
+# DNS and SSL
+dnspython>=2.0         # DNS support for Let's Encrypt
+
+# Excel import/export
+pandas>=2.0            # Data processing
+openpyxl>=3.1          # Excel file support
+
+# Notification
+pyncclient             # Nextcloud notifications
