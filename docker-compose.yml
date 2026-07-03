@@ -1,62 +1,101 @@
-networks:
-  default:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.201.0.0/16
-
 services:
-  web8084:
-    container_name: ${WEB_HOST}
-    image: ${WEB_IMAGE_NAME}:${WEB_IMAGE_TAG}
-    build: ./
+  web:
+    container_name: odoo_web_8083
+    image: odoo:19.0
     depends_on:
-      - db5436
+      - db
     ports:
-      - "${WEB_PORT}:8069"
+      - "8083:8069"
+      - "8072:8072"
     volumes:
       - odoo-web-data:/var/lib/odoo
-      - ./config:/etc/odoo
-      - /mnt/addons:/mnt/extra-addons
-      - ${WEB_ADDONS_CUSTOMIZE}:/mnt/extra-addons-customize
-    entrypoint: "/usr/bin/odoo -c /etc/odoo/odoo.conf"
+      - ./addons:/mnt/extra-addons:ro
+      - /srv/odoo-modules/l10n_py:/mnt/extra-addons-l10n:ro  # Clone from github.com/marcelompz/odoo-l10n-py
+    command: >
+      bash -c "pip3 install --break-system-packages tu-ruc-python-client && odoo --addons-path=/mnt/extra-addons,/mnt/extra-addons-l10n,/usr/lib/python3/dist-packages/odoo/addons --db_host=${DB_HOST} --db_port=${DB_PORT} --db_user=${DB_USER} --db_password=${DB_PASSWORD}"
     environment:
-      - HOST=${DB_NAME}
-      - USER=${DB_USER}
-      - PASSWORD=${DB_PASSWD}
+      # Database (from .env)
+      - HOST=${DB_HOST:-db}
+      - PORT=${DB_PORT:-5432}
+      - USER=${DB_USER:-odoo}
+      - PASSWORD=${DB_PASSWORD:-crossdimora.159753}
+      - DB_HOST=${DB_HOST:-db}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_USER=${DB_USER:-odoo}
+      - DB_PASSWORD=${DB_PASSWORD:-crossdimora.159753}
+
+      # Odoo Configuration
+      - ODOO_DB_FILTER=${ODOO_DB_FILTER:-^prod$}
+      - ODOO_ADMIN_PASSWD=${ODOO_ADMIN_PASSWD:-soportecrossdimora.159753}
+
+      # Performance
+      - WORKERS=2
+      - LIMIT_MEMORY_HARD=2684354560
+      - LIMIT_MEMORY_SOFT=2147483648
+      - LIMIT_REQUEST=100
+      - LIMIT_TIME_CPU=600
+      - LIMIT_TIME_REAL=1200
+
+      # System
       - TZ=America/Asuncion
-      - DEBIAN_FRONTEND=noninteractive
-    #restart: always
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
-  db5436:
-    container_name: ${DB_HOST}
-    image: ${DB_IMAGE}:${DB_TAG}
+      - ODOO_LOG_LEVEL=info
+
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8069/web/database/selector"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+  db:
+    container_name: db_odoo_5434
+    image: postgres:15
     environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_PASSWORD=${DB_PASSWD}
-      - POSTGRES_USER=${DB_USER}
-      - PGDATA=/var/lib/postgresql/data/pgdata
-      - TZ=America/Asuncion
-      - DEBIAN_FRONTEND=noninteractive
+      - POSTGRES_DB=${DB_NAME:-postgres}
+      - POSTGRES_USER=${DB_USER:-odoo}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-crossdimora.159753}
+      - TZ=${TZ:-America/Asuncion}
     ports:
-      - "${DB_PORT}:5432"
+      - "${DB_PORT:-5434}:5432"
     volumes:
-      - odoo-db-data:/var/lib/postgresql/data/pgdata
-    #restart: always
+      - odoo-db-data:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-odoo} -d ${DB_NAME:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  init:
+    container_name: odoo_init_db
+    image: odoo:19.0
+    depends_on:
+      web:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    volumes:
+      - ./addons:/mnt/extra-addons:ro
+      - /srv/odoo-modules/l10n_py:/mnt/extra-addons-l10n:ro
+      - ./init_prod_db.sh:/init_prod_db.sh:ro
+    environment:
+      - DB_NAME=prod
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=odoo
+      - DB_PASSWD=crossdimora.159753
+      - ADMIN_EMAIL=soporte@crossnexion.com
+      - ADMIN_PASSWORD=Cross1983_
+    command: >
+      bash -c "
+        pip3 install --break-system-packages tu-ruc-python-client &&
+        bash /init_prod_db.sh &&
+        touch /tmp/init_completed
+      "
+    restart: "no"
+
 volumes:
   odoo-db-data:
-    driver: local
-    driver_opts:
-      type: none
-      device: ${DB_VOLUMES}
-      o: bind
   odoo-web-data:
-    driver: local
-    driver_opts:
-      type: none
-      device: ${WEB_VOLUMES}
-      o: bind
