@@ -17,8 +17,8 @@ import odoo.modules.registry
 from odoo import api, SUPERUSER_ID
 
 def import_settings():
-    db_host = os.environ.get('DB_HOST', 'db5436')
-    db_port = os.environ.get('DB_PORT', '5432')
+    db_host = os.environ.get('DB_HOST', 'db_odoo_5436')
+    db_port = '5432' if os.environ.get('DB_PORT') in ['5436', None] else os.environ.get('DB_PORT', '5432')
     db_user = os.environ.get('DB_USER', 'odoo')
     db_password = os.environ.get('DB_PASSWD', 'cross.159753')
     db_name = os.environ.get('DB_NAME', 'prod')
