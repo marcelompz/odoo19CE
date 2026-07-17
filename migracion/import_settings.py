@@ -234,10 +234,26 @@ def import_settings():
         except Exception as e:
             print(f"  ⚠️ Analytic accounts configuration warning: {e}")
 
-        # 7. POS Config (Punto de Venta)
+        # 7. POS Config (Puntos de Venta)
         try:
             if 'pos.config' in env and 'account.journal' in env and 'pos.payment.method' in env:
                 print("Configuring Point of Sale (POS)...")
+                # Archive/deactivate unwanted demo POS configs (Bakery, Clothes Shop, Furniture Shop, etc.)
+                to_remove = config.get('pos_configs_to_remove', ["Bakery", "Clothes Shop", "Furniture Shop"])
+                for demo_name in to_remove:
+                    demo_pos = env['pos.config'].search([('name', '=ilike', demo_name)], limit=1)
+                    if demo_pos and demo_pos.name != 'Ferretería':
+                        try:
+                            # If no active sessions, archive demo config
+                            has_session = False
+                            if 'pos.session' in env:
+                                has_session = bool(env['pos.session'].search([('config_id', '=', demo_pos.id), ('state', '!=', 'closed')], limit=1))
+                            if not has_session:
+                                demo_pos.write({'active': False})
+                                print(f"  ✓ Archived demo POS Config: {demo_pos.name}")
+                        except Exception:
+                            pass
+
                 cash_journal = env['account.journal'].search([('type', '=', 'cash'), ('company_id', '=', 1)], limit=1)
                 cash_method = env['pos.payment.method'].search([('journal_id', '=', cash_journal.id)], limit=1) if cash_journal else None
                 if cash_journal and not cash_method:
@@ -261,40 +277,52 @@ def import_settings():
                     ('company_id', '=', 1)
                 ], limit=1)
 
-                pos_config = env['pos.config'].search([('name', '=', 'Caja Principal')], limit=1)
-                has_active_session = False
-                if pos_config and 'pos.session' in env:
-                    active_sessions = env['pos.session'].search([
-                        ('config_id', '=', pos_config.id),
-                        ('state', '!=', 'closed')
-                    ])
-                    if active_sessions:
-                        has_active_session = True
-                        print("  ℹ POS Caja Principal has active sessions. Skipping configuration updates to avoid Odoo locks.")
+                payment_methods = []
+                if cash_method:
+                    payment_methods.append(cash_method.id)
+                if bank_method:
+                    payment_methods.append(bank_method.id)
 
-                if not has_active_session:
-                    payment_methods = []
-                    if cash_method:
-                        payment_methods.append(cash_method.id)
-                    if bank_method:
-                        payment_methods.append(bank_method.id)
-                        
-                    pos_vals = {
-                        'name': 'Caja Principal',
-                    }
-                    if hasattr(env['pos.config'], 'module_pos_restaurant'):
-                        pos_vals['module_pos_restaurant'] = True
-                    if invoice_journal:
-                        pos_vals['invoice_journal_id'] = invoice_journal.id
-                    if payment_methods:
-                        pos_vals['payment_method_ids'] = [(6, 0, payment_methods)]
+                pos_list = config.get('pos_configs', [{'name': 'Ferretería', 'is_restaurant': False}])
+                for pos_data in pos_list:
+                    pos_name = pos_data.get('name', 'Ferretería')
+                    pos_config = env['pos.config'].search([('name', '=', pos_name)], limit=1)
+                    if not pos_config:
+                        # Fallback: check if an unarchived/archived default exists and rename it
+                        unnamed_pos = env['pos.config'].with_context(active_test=False).search([('name', 'in', ['Caja Principal', 'Shop', 'Main'])], limit=1)
+                        if unnamed_pos:
+                            pos_config = unnamed_pos
+                            pos_config.write({'name': pos_name, 'active': True})
+                            print(f"  ✓ Renamed default POS Config to: {pos_name}")
 
-                    if pos_config:
-                        pos_config.write(pos_vals)
-                        print(f"  ✓ Updated POS Config: {pos_config.name}")
-                    else:
-                        pos_config = env['pos.config'].create(pos_vals)
-                        print(f"  ✓ Created POS Config: {pos_config.name}")
+                    has_active_session = False
+                    if pos_config and 'pos.session' in env:
+                        active_sessions = env['pos.session'].search([
+                            ('config_id', '=', pos_config.id),
+                            ('state', '!=', 'closed')
+                        ])
+                        if active_sessions:
+                            has_active_session = True
+                            print(f"  ℹ POS {pos_name} has active sessions. Skipping configuration updates to avoid Odoo locks.")
+
+                    if not has_active_session:
+                        pos_vals = {
+                            'name': pos_name,
+                            'active': True,
+                        }
+                        if hasattr(env['pos.config'], 'module_pos_restaurant'):
+                            pos_vals['module_pos_restaurant'] = pos_data.get('is_restaurant', False)
+                        if invoice_journal:
+                            pos_vals['invoice_journal_id'] = invoice_journal.id
+                        if payment_methods:
+                            pos_vals['payment_method_ids'] = [(6, 0, payment_methods)]
+
+                        if pos_config:
+                            pos_config.write(pos_vals)
+                            print(f"  ✓ Updated POS Config: {pos_config.name}")
+                        else:
+                            pos_config = env['pos.config'].create(pos_vals)
+                            print(f"  ✓ Created POS Config: {pos_config.name}")
         except Exception as e:
             print(f"  ⚠️ POS configuration warning: {e}")
 

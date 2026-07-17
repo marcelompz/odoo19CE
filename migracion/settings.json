@@ -72,5 +72,12 @@
       "name": "Sucursal 1 - Analítica",
       "code": "SUC1-ANA"
     }
-  ]
+  ],
+  "pos_configs": [
+    {
+      "name": "Ferretería",
+      "is_restaurant": false
+    }
+  ],
+  "pos_configs_to_remove": ["Bakery", "Clothes Shop", "Furniture Shop", "Shop", "Bar/Restaurant", "Caja Principal"]
 }
