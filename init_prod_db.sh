@@ -181,6 +181,19 @@ else
     echo "  ℹ Importación automática de productos desactivada por defecto (IMPORT_PRODUCTS=false). Omitiendo."
 fi
 
+# Importar empresa, usuarios y configuraciones desde /mnt/migracion
+echo ""
+echo "=== Importando empresa, usuarios y parámetros del sistema ==="
+if [ -f "/mnt/migracion/import_company_users.py" ]; then
+    echo "  → Cargando datos de empresa y usuarios (/mnt/migracion/import_company_users.py)..."
+    python3 /mnt/migracion/import_company_users.py 2>&1 || echo "⚠️ Warning: Ocurrió un aviso en import_company_users.py"
+fi
+
+if [ -f "/mnt/migracion/import_settings.py" ]; then
+    echo "  → Aplicando parámetros y configuración (/mnt/migracion/import_settings.py)..."
+    python3 /mnt/migracion/import_settings.py 2>&1 || echo "⚠️ Warning: Ocurrió un aviso en import_settings.py"
+fi
+
 echo "============================================================"
 echo "✓ Inicialización de Odoo 19 CE completada con éxito"
 echo "============================================================"
