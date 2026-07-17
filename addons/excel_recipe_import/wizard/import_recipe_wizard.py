@@ -132,9 +132,10 @@ class ExcelRecipeImportWizard(models.TransientModel):
                 'detailed_type': 'product', # Almacenable
                 'standard_price': cost,
                 'uom_id': uom.id if uom else False,
-                'uom_po_id': uom.id if uom else False,
                 'available_in_pos': available_in_pos,
             }
+            if 'uom_po_id' in self.env['product.product']._fields:
+                vals['uom_po_id'] = uom.id if uom else False
             if category_name:
                 category = self.env['product.category'].search([('name', '=', category_name)], limit=1)
                 if not category:

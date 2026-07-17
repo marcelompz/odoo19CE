@@ -45,9 +45,8 @@ class ResUsersInherit(models.Model):
     def default_get(self, default_fields):
         res = super().default_get(default_fields)
 
-        copy_data = {
-            'l10n_latam_identification_type_id': self.env.ref('l10n_py.it_vat'),
-        }
-        res.update(copy_data)
-    
+        it_vat = self.env.ref('l10n_py.it_vat', raise_if_not_found=False)
+        if it_vat:
+            res['l10n_latam_identification_type_id'] = it_vat.id
+
         return res

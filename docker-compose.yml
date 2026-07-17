@@ -1,40 +1,40 @@
-networks:
-  default:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 10.201.0.0/16
-
 services:
   web8084:
     container_name: ${WEB_HOST}
-    image: ${WEB_IMAGE_NAME}:${WEB_IMAGE_TAG}
-    build: ./
+    image: odoo-migracion-test:19.0
+    build:
+      context: ./
+      dockerfile: Dockerfile
     depends_on:
       - db5436
     ports:
       - "${WEB_PORT}:8069"
+    env_file:
+      - .env
     volumes:
       - odoo-web-data:/var/lib/odoo
       - ./config:/etc/odoo
       - /mnt/addons:/mnt/extra-addons
       - ${WEB_ADDONS_CUSTOMIZE}:/mnt/extra-addons-customize
-    entrypoint: "/usr/bin/odoo -c /etc/odoo/odoo.conf -i base --without-demo=all --init base"
+      - ${WEB_ADDONS_L10NPY}:/mnt/extra-addons-l10py
+      - ./migracion:/mnt/migracion
     environment:
-      - HOST=${DB_NAME}
+      - HOST=${DB_HOST}
       - USER=${DB_USER}
       - PASSWORD=${DB_PASSWD}
+      - PGHOST=${DB_HOST}
+      - PGPORT=5432
+      - PGDATABASE=${DB_NAME}
+      - PGPASSWORD=${DB_PASSWD}
       - TZ=America/Asuncion
       - DEBIAN_FRONTEND=noninteractive
-    #restart: always
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+#    restart: unless-stopped
+
   db5436:
     container_name: ${DB_HOST}
     image: ${DB_IMAGE}:${DB_TAG}
+    env_file:
+      - .env
     environment:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_PASSWORD=${DB_PASSWD}
@@ -46,7 +46,42 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - odoo-db-data:/var/lib/postgresql/data/pgdata
-    #restart: always
+#    restart: always
+
+  init:
+    container_name: odoo_init_db_19
+    image: odoo-migracion-test:19.0
+    depends_on:
+      - db5436
+    env_file:
+      - .env
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./config:/etc/odoo
+      - /mnt/addons:/mnt/extra-addons
+      - ${WEB_ADDONS_CUSTOMIZE}:/mnt/extra-addons-customize
+      - ${WEB_ADDONS_L10NPY}:/mnt/extra-addons-l10py
+      - ./init_prod_db.sh:/init_prod_db.sh:ro
+      - ./modules.conf:/modules.conf:ro
+      - ./migracion:/mnt/migracion
+    environment:
+      - DB_NAME=${DB_NAME}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=5432
+      - DB_USER=${DB_USER}
+      - DB_PASSWD=${DB_PASSWD}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - IMPORT_RECIPES=${IMPORT_RECIPES:-false}
+      - IMPORT_PRODUCTS=${IMPORT_PRODUCTS:-false}
+    command: >
+      bash -c "
+        pip3 install --break-system-packages tu-ruc-python-client 2>/dev/null || true &&
+        bash /init_prod_db.sh &&
+        touch /tmp/init_completed
+      "
+    restart: "no"
+
 volumes:
   odoo-db-data:
     driver: local
