@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Excel Recipe Import',
-    'version': '19.0.1.0.1',
-    'summary': 'Import Products, MRP BoMs and POS BoMs from Excel Template',
+    'version': '19.0.2.0.0',
+    'summary': 'Import Products, MRP BoMs and POS BoMs from Excel Template with Validation',
     'author': 'Crossnexion',
     'category': 'Manufacturing',
-    'external_dependencies': {'python': ['pandas']},
+    'external_dependencies': {
+        'python': ['pandas', 'openpyxl', 'packaging'],
+    },
     'depends': ['base', 'product', 'mrp', 'pos_product_bom'],
     'data': [
         'security/ir.model.access.csv',

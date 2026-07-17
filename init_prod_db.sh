@@ -1,9 +1,9 @@
 #!/bin/bash
-# Script de inicialización de base de datos Odoo 19 CE
+# Script de inicialización de base de datos Odoo 19 CE para Provecchio / OrderFlow
 set -e
 
 echo "============================================================"
-echo "Inicialización de Odoo 19 - Base de datos PROD"
+echo "Inicialización de Odoo 19 CE - Base de datos PROD"
 echo "============================================================"
 
 DB_NAME="${DB_NAME:-prod}"
@@ -19,12 +19,15 @@ export PGPASSWORD="$DB_PASSWD"
 # Verificar módulos l10n_py (montados en el contenedor)
 echo "=== Verificando módulos l10n_py ==="
 L10N_PY_DIR="/mnt/extra-addons-l10py"
+if [ ! -d "$L10N_PY_DIR/l10n_py" ]; then
+    L10N_PY_DIR="/mnt/extra-addons-l10n"
+fi
 
 if [ -d "$L10N_PY_DIR/l10n_py" ]; then
-    echo "✓ Módulos l10n_py disponibles"
+    echo "✓ Módulos l10n_py disponibles en $L10N_PY_DIR"
     ls -la "$L10N_PY_DIR"
 else
-    echo "⚠️ Módulos l10n_py no disponibles en $L10N_PY_DIR. Se continuará sin l10n_py montado localmente."
+    echo "⚠️ Módulos l10n_py no disponibles en $L10N_PY_DIR. Se continuará con los módulos cargados."
 fi
 echo ""
 
@@ -50,7 +53,7 @@ fi
 echo ""
 
 # Esperar a que PostgreSQL esté disponible
-echo "Esperando PostgreSQL..."
+echo "Esperando PostgreSQL en $DB_HOST:$DB_PORT..."
 until psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c '\q' 2>/dev/null; do
   echo "  Esperando..."
   sleep 2
@@ -81,7 +84,7 @@ if [ -f "$MODULES_FILE" ]; then
   MODULES_LIST=$(sed 's/^[[:space:]]*//;s/[[:space:]]*$//' "$MODULES_FILE" | grep -v '^#' | grep -v '^$' | tr '\n' ',' | sed 's/,$//')
 else
   echo "⚠️ Archivo $MODULES_FILE no encontrado. Usando lista por defecto."
-  MODULES_LIST="base,web,mail,mrp,point_of_sale,stock,purchase,sale,product_mass_import,ica_web_responsive"
+  MODULES_LIST="base,web,mail,mrp,point_of_sale,stock,purchase,sale,product_mass_import,ica_web_responsive,base_accounting_kit"
 fi
 
 echo "Módulos a instalar: $MODULES_LIST"
@@ -97,7 +100,7 @@ odoo \
      --db_port "$DB_PORT" \
      --db_user "$DB_USER" \
      --db_password "$DB_PASSWD" \
-     --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/usr/lib/python3/dist-packages/odoo/addons \
+     --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
      2>&1 | tail -30
 
 echo "✓ Odoo 19 inicializado"
@@ -133,31 +136,12 @@ try:
         user = env['res.users'].search([('login', '=', '$ADMIN_EMAIL')], limit=1)
         if user:
             user.sudo().write({'password': '$ADMIN_PASSWORD'})
-            print('  ✓ Password establecido')
+            cr.commit()
+            print('  ✓ Password establecido con éxito')
         else:
             print('  ✗ Usuario no encontrado')
-
-        # Cargar logo de la empresa si existe en /mnt/migracion/
-        import glob
-        import base64
-        logo_files = glob.glob('/mnt/migracion/*logo*.[pP][nN][gG]') + \
-                     glob.glob('/mnt/migracion/*logo*.[jJ][pP][gG]') + \
-                     glob.glob('/mnt/migracion/*logo*.[jJ][pP][eE][gG]')
-        if not logo_files:
-            logo_files = glob.glob('/mnt/migracion/*.[pP][nN][gG]') + \
-                         glob.glob('/mnt/migracion/*.[jJ][pP][gG]') + \
-                         glob.glob('/mnt/migracion/*.[jJ][pP][eE][gG]')
-        if logo_files:
-            logo_path = logo_files[0]
-            with open(logo_path, 'rb') as f:
-                logo_data = base64.b64encode(f.read())
-            company = env['res.company'].browse(1)
-            if company.exists():
-                company.write({'logo': logo_data})
-                print(f'  ✓ Logo de empresa cargado con éxito desde {logo_path}')
-        cr.commit()
 except Exception as e:
-    print('  ✗ Error:', e)
+    print('  ✗ Error al establecer password:', e)
 PYEOF
 
 # Configurar Paraguay
@@ -182,7 +166,7 @@ if [ -d "$L10N_PY_DIR/l10n_py" ]; then
          --db_port "$DB_PORT" \
          --db_user "$DB_USER" \
          --db_password "$DB_PASSWD" \
-         --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/usr/lib/python3/dist-packages/odoo/addons \
+         --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
          2>&1 | tail -20
     echo "✓ Módulos de localización Paraguay instalados"
 fi
@@ -191,26 +175,12 @@ echo ""
 IMPORT_PRODUCTS_VAL="${IMPORT_PRODUCTS:-false}"
 if [ "$IMPORT_PRODUCTS_VAL" = "true" ] || [ "$IMPORT_PRODUCTS_VAL" = "1" ]; then
     echo "  → Importando productos y comidas (IMPORT_PRODUCTS=true)..."
-    python3 /mnt/migracion/import_products_direct.py
-    python3 /mnt/migracion/import_comidas_direct.py
+    python3 /mnt/migracion/import_products_direct.py 2>/dev/null || true
+    python3 /mnt/migracion/import_comidas_direct.py 2>/dev/null || true
 else
     echo "  ℹ Importación automática de productos desactivada por defecto (IMPORT_PRODUCTS=false). Omitiendo."
 fi
 
-# Importación de recetas opcional (solo si IMPORT_RECIPES=true)
-IMPORT_RECIPES_VAL="${IMPORT_RECIPES:-false}"
-if [ "$IMPORT_RECIPES_VAL" = "true" ] || [ "$IMPORT_RECIPES_VAL" = "1" ]; then
-    echo "  → Importando recetas (IMPORT_RECIPES=true)..."
-    python3 /mnt/migracion/import_recipes_direct.py || echo "⚠️ Warning: No se pudieron importar las recetas"
-else
-    echo "  ℹ Importación de recetas desactivada por defecto (IMPORT_RECIPES=false). Omitiendo."
-fi
-
-python3 /mnt/migracion/import_company_users.py
-python3 /mnt/migracion/import_settings.py
-echo "✓ Datos maestros y configuración de empresa/usuarios/parámetros importados"
-echo ""
 echo "============================================================"
-echo "✓ Inicialización de Odoo 19 completada con éxito"
+echo "✓ Inicialización de Odoo 19 CE completada con éxito"
 echo "============================================================"
-echo ""
