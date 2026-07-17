@@ -110,6 +110,7 @@ fi
 
 echo -e "\n${BLUE}[4/4] Levantando servidor Web de Odoo 19...${NC}"
 docker compose up -d web8084
+docker network connect traefik-public odoo_web_8084 2>/dev/null || true
 
 echo -e "\n${BOLD}${GREEN}============================================================${NC}"
 echo -e "${BOLD}${GREEN}  ¡Despliegue finalizado con éxito!                         ${NC}"
