@@ -1,0 +1,35 @@
+[
+  {
+    "name": "Crossnexion",
+    "login": "soporte@crossnexion.com",
+    "password": "Cross1983_",
+    "groups": [
+      "base.group_system",
+      "point_of_sale.group_pos_manager",
+      "stock.group_stock_manager",
+      "mrp.group_mrp_manager",
+      "purchase.group_purchase_manager",
+      "sales_team.group_sale_salesman_all_leads",
+      "account.group_account_manager"
+    ]
+  },
+  {
+    "name": "Administrador",
+    "login": "admin@ferresur.com.py",
+    "password": "Admin2026!",
+    "groups": [
+      "stock.group_stock_manager",
+      "mrp.group_mrp_manager",
+      "point_of_sale.group_pos_manager",
+      "purchase.group_purchase_manager"
+    ]
+  },
+  {
+    "name": "Cajero POS 1",
+    "login": "pos1@ferresur.com.py",
+    "password": "Pos2026!",
+    "groups": [
+      "point_of_sale.group_pos_user"
+    ]
+  }
+]
