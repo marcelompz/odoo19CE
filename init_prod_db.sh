@@ -13,6 +13,7 @@ DB_USER="${DB_USER:-odoo}"
 DB_PASSWD="${DB_PASSWD:-cross.159753}"
 ADMIN_EMAIL="${ADMIN_EMAIL:-soporte@crossnexion.com}"
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-Cross1983_}"
+FORCE_MIGRATION="${FORCE_MIGRATION:-false}"
 
 export PGPASSWORD="$DB_PASSWD"
 
@@ -25,7 +26,6 @@ fi
 
 if [ -d "$L10N_PY_DIR/l10n_py" ]; then
     echo "✓ Módulos l10n_py disponibles en $L10N_PY_DIR"
-    ls -la "$L10N_PY_DIR"
 else
     echo "⚠️ Módulos l10n_py no disponibles en $L10N_PY_DIR. Se continuará con los módulos cargados."
 fi
@@ -46,8 +46,6 @@ if target in content:
     with open(file_path, 'w') as f:
         f.write(content)
     print('  ✓ Bug de psycopg2 (l10n_latam.identification.type) corregido en caliente')
-else:
-    print('  ✓ El bug ya estaba corregido o el archivo es diferente')
 "
 fi
 echo ""
@@ -70,53 +68,55 @@ else
 fi
 
 # Verificar si Odoo ya está inicializado (si existe la tabla res_users)
-IS_INITIALIZED=false
 if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT 1 FROM pg_tables WHERE tablename='res_users'" 2>/dev/null | grep -q 1; then
-  IS_INITIALIZED=true
-  echo "✓ Base de datos '$DB_NAME' ya cuenta con tablas base de Odoo."
+  if [ "$FORCE_MIGRATION" != "true" ] && [ "$FORCE_MIGRATION" != "1" ]; then
+    echo "✓ Odoo ya está inicializado en '$DB_NAME'. Omitiendo configuración e importación de arranque."
+    exit 0
+  else
+    echo "ℹ FORCE_MIGRATION=true detectado. Se re-ejecutarán los scripts de migración sobre la base existente."
+  fi
 fi
 
-if [ "$IS_INITIALIZED" = false ]; then
-  # Leer los módulos desde modules.conf
-  MODULES_LIST=""
-  MODULES_FILE="/modules.conf"
+# Leer los módulos desde modules.conf
+MODULES_LIST=""
+MODULES_FILE="/modules.conf"
 
-  if [ -f "$MODULES_FILE" ]; then
-    echo "✓ Cargando lista de módulos desde $MODULES_FILE"
-    MODULES_LIST=$(sed 's/^[[:space:]]*//;s/[[:space:]]*$//' "$MODULES_FILE" | grep -v '^#' | grep -v '^$' | tr '\n' ',' | sed 's/,$//')
-  else
-    echo "⚠️ Archivo $MODULES_FILE no encontrado. Usando lista por defecto."
-    MODULES_LIST="base,web,mail,mrp,point_of_sale,stock,purchase,sale,product_mass_import,ica_web_responsive,base_accounting_kit"
-  fi
+if [ -f "$MODULES_FILE" ]; then
+  echo "✓ Cargando lista de módulos desde $MODULES_FILE"
+  MODULES_LIST=$(sed 's/^[[:space:]]*//;s/[[:space:]]*$//' "$MODULES_FILE" | grep -v '^#' | grep -v '^$' | tr '\n' ',' | sed 's/,$//')
+else
+  echo "⚠️ Archivo $MODULES_FILE no encontrado. Usando lista por defecto."
+  MODULES_LIST="base,web,mail,mrp,point_of_sale,stock,purchase,sale,product_mass_import,ica_web_responsive,base_accounting_kit"
+fi
 
-  echo "Módulos a instalar: $MODULES_LIST"
+echo "Módulos a instalar: $MODULES_LIST"
 
-  # Inicializar Odoo 19
-  echo "Inicializando Odoo en '$DB_NAME'..."
-  odoo \
-       -d "$DB_NAME" \
-       --init "$MODULES_LIST" \
-       --stop-after-init \
-       --without-demo=all \
-       --db_host "$DB_HOST" \
-       --db_port "$DB_PORT" \
-       --db_user "$DB_USER" \
-       --db_password "$DB_PASSWD" \
-       --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
-       2>&1 | tail -30
+# Inicializar Odoo 19
+echo "Inicializando Odoo en '$DB_NAME'..."
+odoo \
+     -d "$DB_NAME" \
+     --init "$MODULES_LIST" \
+     --stop-after-init \
+     --without-demo=all \
+     --db_host "$DB_HOST" \
+     --db_port "$DB_PORT" \
+     --db_user "$DB_USER" \
+     --db_password "$DB_PASSWD" \
+     --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
+     2>&1 | tail -30
 
-  echo "✓ Odoo 19 inicializado"
+echo "✓ Odoo 19 inicializado"
 
-  # Actualizar usuario admin
-  echo "Actualizando usuario admin..."
-  psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" <<EOF
+# Actualizar usuario admin
+echo "Actualizando usuario admin..."
+psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" <<EOF
 UPDATE res_users SET login='$ADMIN_EMAIL' WHERE login='admin';
 EOF
-  echo "  ✓ Email actualizado a: $ADMIN_EMAIL"
+echo "  ✓ Email actualizado a: $ADMIN_EMAIL"
 
-  # Establecer password usando ORM de Odoo
-  echo "Estableciendo password..."
-  python3 << PYEOF
+# Establecer password usando ORM de Odoo
+echo "Estableciendo password..."
+python3 << PYEOF
 import sys
 sys.path.insert(0, '/usr/lib/python3/dist-packages')
 import odoo
@@ -146,32 +146,31 @@ except Exception as e:
     print('  ✗ Error al establecer password:', e)
 PYEOF
 
-  # Configurar Paraguay
-  echo "Configurando Paraguay..."
-  psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c \
-    "UPDATE res_company SET country_id=(SELECT id FROM res_country WHERE name='Paraguay' LIMIT 1) WHERE id=1;" 2>/dev/null || true
+# Configurar Paraguay
+echo "Configurando Paraguay..."
+psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c \
+  "UPDATE res_company SET country_id=(SELECT id FROM res_country WHERE name='Paraguay' LIMIT 1) WHERE id=1;" 2>/dev/null || true
 
-  psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c \
-    "UPDATE res_company SET currency_id=(SELECT id FROM res_currency WHERE name='PYG' LIMIT 1) WHERE id=1;" 2>/dev/null || true
+psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c \
+  "UPDATE res_company SET currency_id=(SELECT id FROM res_currency WHERE name='PYG' LIMIT 1) WHERE id=1;" 2>/dev/null || true
 
-  echo "✓ Paraguay configurado"
+echo "✓ Paraguay configurado"
 
-  # Instalar módulos l10n_py si están disponibles
-  if [ -d "$L10N_PY_DIR/l10n_py" ]; then
-      echo "Instalando módulos de localización Paraguay (l10n_py)..."
-      odoo \
-           -d "$DB_NAME" \
-           --init l10n_py \
-           --stop-after-init \
-           --without-demo=all \
-           --db_host "$DB_HOST" \
-           --db_port "$DB_PORT" \
-           --db_user "$DB_USER" \
-           --db_password "$DB_PASSWD" \
-           --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
-           2>&1 | tail -20
-      echo "✓ Módulos de localización Paraguay instalados"
-  fi
+# Instalar módulos l10n_py si están disponibles
+if [ -d "$L10N_PY_DIR/l10n_py" ]; then
+    echo "Instalando módulos de localización Paraguay (l10n_py)..."
+    odoo \
+         -d "$DB_NAME" \
+         --init l10n_py \
+         --stop-after-init \
+         --without-demo=all \
+         --db_host "$DB_HOST" \
+         --db_port "$DB_PORT" \
+         --db_user "$DB_USER" \
+         --db_password "$DB_PASSWD" \
+         --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
+         2>&1 | tail -20
+    echo "✓ Módulos de localización Paraguay instalados"
 fi
 
 echo ""
@@ -184,7 +183,7 @@ else
     echo "  ℹ Importación automática de productos desactivada por defecto (IMPORT_PRODUCTS=false). Omitiendo."
 fi
 
-# Importar empresa, usuarios y configuraciones desde /mnt/migracion SIEMPRE
+# Importar empresa, usuarios y configuraciones desde /mnt/migracion solo en la inicialización inicial
 echo ""
 echo "=== Importando empresa, usuarios y parámetros del sistema (/mnt/migracion) ==="
 if [ -f "/mnt/migracion/import_company_users.py" ]; then
