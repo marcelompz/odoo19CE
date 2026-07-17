@@ -70,51 +70,53 @@ else
 fi
 
 # Verificar si Odoo ya está inicializado (si existe la tabla res_users)
+IS_INITIALIZED=false
 if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT 1 FROM pg_tables WHERE tablename='res_users'" 2>/dev/null | grep -q 1; then
-  echo "✓ Odoo ya está inicializado en '$DB_NAME'. Omitiendo configuración de arranque."
-  exit 0
+  IS_INITIALIZED=true
+  echo "✓ Base de datos '$DB_NAME' ya cuenta con tablas base de Odoo."
 fi
 
-# Leer los módulos desde modules.conf
-MODULES_LIST=""
-MODULES_FILE="/modules.conf"
+if [ "$IS_INITIALIZED" = false ]; then
+  # Leer los módulos desde modules.conf
+  MODULES_LIST=""
+  MODULES_FILE="/modules.conf"
 
-if [ -f "$MODULES_FILE" ]; then
-  echo "✓ Cargando lista de módulos desde $MODULES_FILE"
-  MODULES_LIST=$(sed 's/^[[:space:]]*//;s/[[:space:]]*$//' "$MODULES_FILE" | grep -v '^#' | grep -v '^$' | tr '\n' ',' | sed 's/,$//')
-else
-  echo "⚠️ Archivo $MODULES_FILE no encontrado. Usando lista por defecto."
-  MODULES_LIST="base,web,mail,mrp,point_of_sale,stock,purchase,sale,product_mass_import,ica_web_responsive,base_accounting_kit"
-fi
+  if [ -f "$MODULES_FILE" ]; then
+    echo "✓ Cargando lista de módulos desde $MODULES_FILE"
+    MODULES_LIST=$(sed 's/^[[:space:]]*//;s/[[:space:]]*$//' "$MODULES_FILE" | grep -v '^#' | grep -v '^$' | tr '\n' ',' | sed 's/,$//')
+  else
+    echo "⚠️ Archivo $MODULES_FILE no encontrado. Usando lista por defecto."
+    MODULES_LIST="base,web,mail,mrp,point_of_sale,stock,purchase,sale,product_mass_import,ica_web_responsive,base_accounting_kit"
+  fi
 
-echo "Módulos a instalar: $MODULES_LIST"
+  echo "Módulos a instalar: $MODULES_LIST"
 
-# Inicializar Odoo 19
-echo "Inicializando Odoo en '$DB_NAME'..."
-odoo \
-     -d "$DB_NAME" \
-     --init "$MODULES_LIST" \
-     --stop-after-init \
-     --without-demo=all \
-     --db_host "$DB_HOST" \
-     --db_port "$DB_PORT" \
-     --db_user "$DB_USER" \
-     --db_password "$DB_PASSWD" \
-     --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
-     2>&1 | tail -30
+  # Inicializar Odoo 19
+  echo "Inicializando Odoo en '$DB_NAME'..."
+  odoo \
+       -d "$DB_NAME" \
+       --init "$MODULES_LIST" \
+       --stop-after-init \
+       --without-demo=all \
+       --db_host "$DB_HOST" \
+       --db_port "$DB_PORT" \
+       --db_user "$DB_USER" \
+       --db_password "$DB_PASSWD" \
+       --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
+       2>&1 | tail -30
 
-echo "✓ Odoo 19 inicializado"
+  echo "✓ Odoo 19 inicializado"
 
-# Actualizar usuario admin
-echo "Actualizando usuario admin..."
-psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" <<EOF
+  # Actualizar usuario admin
+  echo "Actualizando usuario admin..."
+  psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" <<EOF
 UPDATE res_users SET login='$ADMIN_EMAIL' WHERE login='admin';
 EOF
-echo "  ✓ Email actualizado a: $ADMIN_EMAIL"
+  echo "  ✓ Email actualizado a: $ADMIN_EMAIL"
 
-# Establecer password usando ORM de Odoo
-echo "Estableciendo password..."
-python3 << PYEOF
+  # Establecer password usando ORM de Odoo
+  echo "Estableciendo password..."
+  python3 << PYEOF
 import sys
 sys.path.insert(0, '/usr/lib/python3/dist-packages')
 import odoo
@@ -144,31 +146,32 @@ except Exception as e:
     print('  ✗ Error al establecer password:', e)
 PYEOF
 
-# Configurar Paraguay
-echo "Configurando Paraguay..."
-psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c \
-  "UPDATE res_company SET country_id=(SELECT id FROM res_country WHERE name='Paraguay' LIMIT 1) WHERE id=1;" 2>/dev/null || true
+  # Configurar Paraguay
+  echo "Configurando Paraguay..."
+  psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c \
+    "UPDATE res_company SET country_id=(SELECT id FROM res_country WHERE name='Paraguay' LIMIT 1) WHERE id=1;" 2>/dev/null || true
 
-psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c \
-  "UPDATE res_company SET currency_id=(SELECT id FROM res_currency WHERE name='PYG' LIMIT 1) WHERE id=1;" 2>/dev/null || true
+  psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c \
+    "UPDATE res_company SET currency_id=(SELECT id FROM res_currency WHERE name='PYG' LIMIT 1) WHERE id=1;" 2>/dev/null || true
 
-echo "✓ Paraguay configurado"
+  echo "✓ Paraguay configurado"
 
-# Instalar módulos l10n_py si están disponibles
-if [ -d "$L10N_PY_DIR/l10n_py" ]; then
-    echo "Instalando módulos de localización Paraguay (l10n_py)..."
-    odoo \
-         -d "$DB_NAME" \
-         --init l10n_py \
-         --stop-after-init \
-         --without-demo=all \
-         --db_host "$DB_HOST" \
-         --db_port "$DB_PORT" \
-         --db_user "$DB_USER" \
-         --db_password "$DB_PASSWD" \
-         --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
-         2>&1 | tail -20
-    echo "✓ Módulos de localización Paraguay instalados"
+  # Instalar módulos l10n_py si están disponibles
+  if [ -d "$L10N_PY_DIR/l10n_py" ]; then
+      echo "Instalando módulos de localización Paraguay (l10n_py)..."
+      odoo \
+           -d "$DB_NAME" \
+           --init l10n_py \
+           --stop-after-init \
+           --without-demo=all \
+           --db_host "$DB_HOST" \
+           --db_port "$DB_PORT" \
+           --db_user "$DB_USER" \
+           --db_password "$DB_PASSWD" \
+           --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
+           2>&1 | tail -20
+      echo "✓ Módulos de localización Paraguay instalados"
+  fi
 fi
 
 echo ""
@@ -181,9 +184,9 @@ else
     echo "  ℹ Importación automática de productos desactivada por defecto (IMPORT_PRODUCTS=false). Omitiendo."
 fi
 
-# Importar empresa, usuarios y configuraciones desde /mnt/migracion
+# Importar empresa, usuarios y configuraciones desde /mnt/migracion SIEMPRE
 echo ""
-echo "=== Importando empresa, usuarios y parámetros del sistema ==="
+echo "=== Importando empresa, usuarios y parámetros del sistema (/mnt/migracion) ==="
 if [ -f "/mnt/migracion/import_company_users.py" ]; then
     echo "  → Cargando datos de empresa y usuarios (/mnt/migracion/import_company_users.py)..."
     python3 /mnt/migracion/import_company_users.py 2>&1 || echo "⚠️ Warning: Ocurrió un aviso en import_company_users.py"
