@@ -24,6 +24,7 @@ RUN pip install --break-system-packages \
     pyncclient \
     nextcloud-api-wrapper \
     "openpyxl>=3.1.5" \
-    tu-ruc-python-client
+    tu-ruc-python-client \
+    qifparse
 
 USER odoo
