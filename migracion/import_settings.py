@@ -89,9 +89,18 @@ def import_settings():
                 
         # 2. Warehouses (Depósitos)
         try:
-            warehouses_list = config.get('warehouses', [])
-            if warehouses_list and 'stock.warehouse' in env:
-                print("Configuring Warehouses (Depósitos)...")
+            if 'stock.warehouse' in env:
+                # Archive or rename sample/demo warehouses (Coronel Bogado, SUC1, etc.)
+                demo_whs = env['stock.warehouse'].search([('code', 'in', ['SUC1', 'SUC2', 'BOG'])])
+                for dwh in demo_whs:
+                    if dwh.code != 'WHC':
+                        try:
+                            dwh.write({'active': False})
+                            print(f"  ✓ Archived sample warehouse: {dwh.name} ({dwh.code})")
+                        except Exception:
+                            pass
+
+                warehouses_list = config.get('warehouses', [{'name': 'Depósito Central', 'code': 'WHC'}])
                 for wh_data in warehouses_list:
                     code = wh_data.get('code')
                     name = wh_data.get('name')
@@ -101,6 +110,7 @@ def import_settings():
                     wh_vals = {
                         'name': name,
                         'code': code,
+                        'active': True,
                     }
                     if wh:
                         wh.write(wh_vals)
@@ -129,25 +139,6 @@ def import_settings():
                         'property_cost_method': cat_data.get('property_cost_method', 'average'),
                         'property_valuation': cat_data.get('property_valuation', 'real_time'),
                     }
-                    
-                    if 'account.account' in env:
-                        val_code = cat_data.get('stock_valuation_account')
-                        in_code = cat_data.get('stock_input_account')
-                        out_code = cat_data.get('stock_output_account')
-                        
-                        if val_code:
-                            acc = env['account.account'].search([('code', '=', val_code)], limit=1)
-                            if acc:
-                                cat_vals['property_stock_valuation_account_id'] = acc.id
-                        if in_code:
-                            acc = env['account.account'].search([('code', '=', in_code)], limit=1)
-                            if acc:
-                                cat_vals['property_stock_account_input_categ_id'] = acc.id
-                        if out_code:
-                            acc = env['account.account'].search([('code', '=', out_code)], limit=1)
-                            if acc:
-                                cat_vals['property_stock_account_output_categ_id'] = acc.id
-                            
                     cat.write(cat_vals)
                     print(f"  ✓ Category configured: {cat_name}")
         except Exception as e:
@@ -175,62 +166,47 @@ def import_settings():
         except Exception as e:
             print(f"  ⚠️ Accounting settings warning: {e}")
 
-        # 5. Journals (Diarios Contables por Sucursal/Localidad)
+        # 5. Journals (Diarios Contables)
         try:
-            journals_list = config.get('journals', [])
-            if journals_list and 'account.journal' in env:
-                print("Configuring Account Journals (Diarios contables)...")
-                for jr_data in journals_list:
-                    code = jr_data.get('code')
-                    name = jr_data.get('name')
-                    jr_type = jr_data.get('type')
-                    if not code or not name or not jr_type:
-                        continue
-                    jr = env['account.journal'].search([('code', '=', code)], limit=1)
-                    jr_vals = {
-                        'name': name,
-                        'code': code,
-                        'type': jr_type,
-                    }
-                    if jr:
-                        upd_vals = {'name': name, 'code': code}
-                        if jr.type != jr_type:
-                            upd_vals['type'] = jr_type
-                        jr.write(upd_vals)
-                        print(f"  ✓ Updated Journal: {name} ({code})")
-                    else:
-                        env['account.journal'].create(jr_vals)
-                        print(f"  ✓ Created Journal: {name} ({code})")
+            if 'account.journal' in env:
+                # Rename or update sample journals with branch suffixes
+                sample_journals = env['account.journal'].search([('code', 'in', ['CS1', 'BS1'])])
+                for sj in sample_journals:
+                    if sj.code == 'CS1':
+                        sj.write({'name': 'Efectivo', 'code': 'CSH1'})
+                    elif sj.code == 'BS1':
+                        sj.write({'name': 'Banco', 'code': 'BNK1'})
+
+                journals_list = config.get('journals', [])
+                if journals_list:
+                    print("Configuring Account Journals (Diarios contables)...")
+                    for jr_data in journals_list:
+                        code = jr_data.get('code')
+                        name = jr_data.get('name')
+                        jr_type = jr_data.get('type')
+                        if not code or not name or not jr_type:
+                            continue
+                        jr = env['account.journal'].search([('code', '=', code)], limit=1)
+                        if jr:
+                            jr.write({'name': name, 'code': code})
+                            print(f"  ✓ Updated Journal: {name} ({code})")
+                        else:
+                            env['account.journal'].create({'name': name, 'code': code, 'type': jr_type})
+                            print(f"  ✓ Created Journal: {name} ({code})")
         except Exception as e:
             print(f"  ⚠️ Journals configuration warning: {e}")
 
-        # 6. Analytic Accounts (Cuentas Analíticas por Sucursal)
+        # 6. Analytic Accounts
         try:
-            analytic_list = config.get('analytic_accounts', [])
-            if analytic_list and 'account.analytic.account' in env and 'account.analytic.plan' in env:
-                print("Configuring Analytic Accounts...")
-                plan = env['account.analytic.plan'].search([], limit=1)
-                if not plan:
-                    plan = env['account.analytic.plan'].create({'name': 'Default Plan'})
-                    print(f"  Created default Analytic Plan: {plan.name}")
-                    
-                for ana_data in analytic_list:
-                    code = ana_data.get('code')
-                    name = ana_data.get('name')
-                    if not code or not name:
-                        continue
-                    ana = env['account.analytic.account'].search([('code', '=', code)], limit=1)
-                    ana_vals = {
-                        'name': name,
-                        'code': code,
-                        'plan_id': plan.id,
-                    }
-                    if ana:
-                        ana.write(ana_vals)
-                        print(f"  ✓ Updated Analytic Account: {name} ({code})")
-                    else:
-                        env['account.analytic.account'].create(ana_vals)
-                        print(f"  ✓ Created Analytic Account: {name} ({code})")
+            if 'account.analytic.account' in env:
+                # Clean sample analytic accounts (SUC1-ANA, etc.)
+                sample_analytics = env['account.analytic.account'].search([('code', 'in', ['SUC1-ANA', 'SUC1'])])
+                for sa in sample_analytics:
+                    try:
+                        sa.write({'active': False})
+                        print(f"  ✓ Archived sample Analytic Account: {sa.name}")
+                    except Exception:
+                        pass
         except Exception as e:
             print(f"  ⚠️ Analytic accounts configuration warning: {e}")
 
