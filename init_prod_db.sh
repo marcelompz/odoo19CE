@@ -67,14 +67,11 @@ else
   echo "✓ Base de datos '$DB_NAME' creada"
 fi
 
-# Verificar si Odoo ya está inicializado (si existe la tabla res_users)
+# Verificar si Odoo ya estaba inicializado
+IS_NEW_DB=true
 if psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -t -c "SELECT 1 FROM pg_tables WHERE tablename='res_users'" 2>/dev/null | grep -q 1; then
-  if [ "$FORCE_MIGRATION" != "true" ] && [ "$FORCE_MIGRATION" != "1" ]; then
-    echo "✓ Odoo ya está inicializado en '$DB_NAME'. Omitiendo configuración e importación de arranque."
-    exit 0
-  else
-    echo "ℹ FORCE_MIGRATION=true detectado. Se re-ejecutarán los scripts de migración sobre la base existente."
-  fi
+  IS_NEW_DB=false
+  echo "✓ Base de datos '$DB_NAME' ya existente detectada."
 fi
 
 # Leer los módulos desde modules.conf
@@ -89,13 +86,12 @@ else
   MODULES_LIST="base,web,mail,mrp,point_of_sale,stock,purchase,sale,product_mass_import,ica_web_responsive,base_accounting_kit"
 fi
 
-echo "Módulos a instalar: $MODULES_LIST"
+echo "Instalando/asegurando módulos de modules.conf: $MODULES_LIST"
 
-# Inicializar Odoo 19
-echo "Inicializando Odoo en '$DB_NAME'..."
+# Instalar/Actualizar módulos listados en modules.conf
 odoo \
      -d "$DB_NAME" \
-     --init "$MODULES_LIST" \
+     -i "$MODULES_LIST" \
      --stop-after-init \
      --without-demo=all \
      --db_host "$DB_HOST" \
@@ -105,9 +101,18 @@ odoo \
      --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
      2>&1 | tail -30
 
-echo "✓ Odoo 19 inicializado"
+echo "✓ Módulos procesados e instalados con éxito"
 
-# Actualizar usuario admin
+# Si la DB ya existía y NO se especificó FORCE_MIGRATION=true, salir aquí para NO sobrescribir datos del usuario
+if [ "$IS_NEW_DB" = false ] && [ "$FORCE_MIGRATION" != "true" ] && [ "$FORCE_MIGRATION" != "1" ]; then
+  echo "✓ Base de datos preexistente protegida: se omitió sobrescribir empresa y usuarios de migracion/."
+  echo "============================================================"
+  echo "✓ Proceso completado exitosamente"
+  echo "============================================================"
+  exit 0
+fi
+
+# A continuación, solo si es una DB NUEVA o se pasó FORCE_MIGRATION=true:
 echo "Actualizando usuario admin..."
 psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" <<EOF
 UPDATE res_users SET login='$ADMIN_EMAIL' WHERE login='admin';
@@ -161,7 +166,7 @@ if [ -d "$L10N_PY_DIR/l10n_py" ]; then
     echo "Instalando módulos de localización Paraguay (l10n_py)..."
     odoo \
          -d "$DB_NAME" \
-         --init l10n_py \
+         -i l10n_py \
          --stop-after-init \
          --without-demo=all \
          --db_host "$DB_HOST" \
@@ -183,7 +188,7 @@ else
     echo "  ℹ Importación automática de productos desactivada por defecto (IMPORT_PRODUCTS=false). Omitiendo."
 fi
 
-# Importar empresa, usuarios y configuraciones desde /mnt/migracion solo en la inicialización inicial
+# Importar empresa, usuarios y configuraciones desde /mnt/migracion
 echo ""
 echo "=== Importando empresa, usuarios y parámetros del sistema (/mnt/migracion) ==="
 if [ -f "/mnt/migracion/import_company_users.py" ]; then
