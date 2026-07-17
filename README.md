@@ -33,3 +33,15 @@ La lista de módulos a instalar se gestiona dinámicamente desde el archivo `mod
 - **`init_prod_db.sh`**: Script ejecutado por el contenedor `init`. Crea la base de datos `$DB_NAME`, instala los módulos configurados en `modules.conf`, configura credenciales de administrador, moneda PYG (Guaraní), localización y ejecuta los scripts de datos maestros.
 - **`migracion/import_settings.py`**: Aplica configuraciones del sistema, SMTP, depósitos, redondeo de impuestos, plazos de pago y activa el idioma **Español (América Latina) `es_419`** para todos los usuarios y contactos por defecto.
 - **`Dockerfile`**: Optimizado instalando bibliotecas de Python pesadas (`pandas`, `openpyxl`, `xlrd`, `paramiko`, `boto3`, `dropbox`) mediante paquetes binarios `.deb` para acelerar los tiempos de construcción.
+
+---
+
+## 🔒 Infraestructura y Reverse Proxy (Traefik v3.3 Exclusivo)
+
+OrderFlow y Odoo 19 CE utilizan **Traefik v3.3** como subsistema nativo de proxy inverso y terminación SSL. **Nginx ha sido eliminado por completo del ecosistema**.
+
+- **Enrutamiento:** Gestionado dinámicamente desde el repositorio [`traefik-orderflow`](https://github.com/marcelompz/traefik-orderflow.git) (`/srv/traefik` en producción).
+- **Red Docker:** El contenedor web (`odoo_web_8084`) se conecta a la red externa `traefik-public`.
+- **Certificados SSL:** Traefik gestiona y renueva automáticamente los certificados Let's Encrypt para `odoo.pesallaccia.com`.
+- **WebSockets / Longpolling:** Enrutamiento directo sin necesidad de parches o proxies intermedios.
+

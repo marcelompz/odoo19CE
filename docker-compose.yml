@@ -29,6 +29,9 @@ services:
       - TZ=America/Asuncion
       - DEBIAN_FRONTEND=noninteractive
     restart: unless-stopped
+    networks:
+      - default
+      - traefik-public
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8069/web/database/selector"]
       interval: 30s
@@ -96,3 +99,9 @@ services:
 volumes:
   odoo-db-data:
   odoo-web-data:
+
+networks:
+  default:
+    driver: bridge
+  traefik-public:
+    external: true
