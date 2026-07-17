@@ -61,7 +61,9 @@ def import_settings():
             if company.exists() and company.currency_id and not company.currency_id.active:
                 company.currency_id.write({'active': True})
                 print(f"  ✓ Activated company currency: {company.currency_id.name}")
+            cr.commit()
         except Exception as e:
+            cr.rollback()
             print(f"  ⚠️ Currency configuration warning: {e}")
         
         # 1. Outgoing Mail Server (SMTP)
@@ -84,7 +86,9 @@ def import_settings():
                 else:
                     env['ir.mail_server'].create(server_vals)
                     print(f"  ✓ Created SMTP Server: {server_vals['name']}")
+            cr.commit()
         except Exception as e:
+            cr.rollback()
             print(f"  ⚠️ SMTP Server configuration warning: {e}")
                 
         # 2. Warehouses (Depósitos)
@@ -118,7 +122,9 @@ def import_settings():
                     else:
                         env['stock.warehouse'].create(wh_vals)
                         print(f"  ✓ Created Warehouse: {name} ({code})")
+            cr.commit()
         except Exception as e:
+            cr.rollback()
             print(f"  ⚠️ Warehouse configuration warning: {e}")
                     
         # 3. Product Categories (Costo y Valoración de Inventario)
@@ -141,7 +147,9 @@ def import_settings():
                     }
                     cat.write(cat_vals)
                     print(f"  ✓ Category configured: {cat_name}")
+            cr.commit()
         except Exception as e:
+            cr.rollback()
             print(f"  ⚠️ Product categories configuration warning: {e}")
 
         # 4. Accounting Settings (Redondeo de IVA y Plazos de Pago)
@@ -163,43 +171,32 @@ def import_settings():
                     if term:
                         term.write({'name': rename_to})
                         print(f"  ✓ Payment Term Immediate renamed to: {rename_to}")
+            cr.commit()
         except Exception as e:
+            cr.rollback()
             print(f"  ⚠️ Accounting settings warning: {e}")
 
         # 5. Journals (Diarios Contables)
         try:
             if 'account.journal' in env:
-                # Rename or update sample journals with branch suffixes
-                sample_journals = env['account.journal'].search([('code', 'in', ['CS1', 'BS1'])])
-                for sj in sample_journals:
-                    if sj.code == 'CS1':
-                        sj.write({'name': 'Efectivo', 'code': 'CSH1'})
-                    elif sj.code == 'BS1':
-                        sj.write({'name': 'Banco', 'code': 'BNK1'})
+                print("Configuring Account Journals (Diarios contables)...")
+                cash_j = env['account.journal'].search([('type', '=', 'cash'), ('company_id', '=', 1)], limit=1)
+                if cash_j:
+                    cash_j.write({'name': 'Efectivo'})
+                    print(f"  ✓ Updated Cash Journal: {cash_j.name} ({cash_j.code})")
 
-                journals_list = config.get('journals', [])
-                if journals_list:
-                    print("Configuring Account Journals (Diarios contables)...")
-                    for jr_data in journals_list:
-                        code = jr_data.get('code')
-                        name = jr_data.get('name')
-                        jr_type = jr_data.get('type')
-                        if not code or not name or not jr_type:
-                            continue
-                        jr = env['account.journal'].search([('code', '=', code)], limit=1)
-                        if jr:
-                            jr.write({'name': name, 'code': code})
-                            print(f"  ✓ Updated Journal: {name} ({code})")
-                        else:
-                            env['account.journal'].create({'name': name, 'code': code, 'type': jr_type})
-                            print(f"  ✓ Created Journal: {name} ({code})")
+                bank_j = env['account.journal'].search([('type', '=', 'bank'), ('company_id', '=', 1)], limit=1)
+                if bank_j:
+                    bank_j.write({'name': 'Banco'})
+                    print(f"  ✓ Updated Bank Journal: {bank_j.name} ({bank_j.code})")
+            cr.commit()
         except Exception as e:
+            cr.rollback()
             print(f"  ⚠️ Journals configuration warning: {e}")
 
         # 6. Analytic Accounts
         try:
             if 'account.analytic.account' in env:
-                # Clean sample analytic accounts (SUC1-ANA, etc.)
                 sample_analytics = env['account.analytic.account'].search([('code', 'in', ['SUC1-ANA', 'SUC1'])])
                 for sa in sample_analytics:
                     try:
@@ -207,20 +204,20 @@ def import_settings():
                         print(f"  ✓ Archived sample Analytic Account: {sa.name}")
                     except Exception:
                         pass
+            cr.commit()
         except Exception as e:
+            cr.rollback()
             print(f"  ⚠️ Analytic accounts configuration warning: {e}")
 
         # 7. POS Config (Puntos de Venta)
         try:
             if 'pos.config' in env and 'account.journal' in env and 'pos.payment.method' in env:
                 print("Configuring Point of Sale (POS)...")
-                # Archive/deactivate unwanted demo POS configs (Bakery, Clothes Shop, Furniture Shop, etc.)
                 to_remove = config.get('pos_configs_to_remove', ["Bakery", "Clothes Shop", "Furniture Shop"])
                 for demo_name in to_remove:
                     demo_pos = env['pos.config'].search([('name', '=ilike', demo_name)], limit=1)
                     if demo_pos and demo_pos.name != 'Ferretería':
                         try:
-                            # If no active sessions, archive demo config
                             has_session = False
                             if 'pos.session' in env:
                                 has_session = bool(env['pos.session'].search([('config_id', '=', demo_pos.id), ('state', '!=', 'closed')], limit=1))
@@ -264,7 +261,6 @@ def import_settings():
                     pos_name = pos_data.get('name', 'Ferretería')
                     pos_config = env['pos.config'].search([('name', '=', pos_name)], limit=1)
                     if not pos_config:
-                        # Fallback: check if an unarchived/archived default exists and rename it
                         unnamed_pos = env['pos.config'].with_context(active_test=False).search([('name', 'in', ['Caja Principal', 'Shop', 'Main'])], limit=1)
                         if unnamed_pos:
                             pos_config = unnamed_pos
@@ -299,7 +295,9 @@ def import_settings():
                         else:
                             pos_config = env['pos.config'].create(pos_vals)
                             print(f"  ✓ Created POS Config: {pos_config.name}")
+            cr.commit()
         except Exception as e:
+            cr.rollback()
             print(f"  ⚠️ POS configuration warning: {e}")
 
         # 8. Configure Language (Español América Latina)
@@ -332,7 +330,9 @@ def import_settings():
                 env['ir.default'].set('res.partner', 'lang', lang_code)
                 env['ir.default'].set('res.users', 'lang', lang_code)
                 print("  ✓ Default language set for future contacts/users.")
+            cr.commit()
         except Exception as e:
+            cr.rollback()
             print(f"  ⚠️ Language configuration warning: {e}")
 
         cr.commit()
