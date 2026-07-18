@@ -53,7 +53,7 @@
         <field name="name">Panel de Gestión OrderFlow</field>
         <field name="res_model">res.config.settings</field>
         <field name="view_mode">form</field>
-        <field name="target">inline</field>
+        <field name="target">current</field>
         <field name="context">{'module' : 'orderflow_connector', 'bin_size': False}</field>
     </record>
 </odoo>
