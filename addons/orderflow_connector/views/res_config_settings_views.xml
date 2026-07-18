@@ -8,7 +8,7 @@
         <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//form" position="inside">
-                <app data-string="OrderFlow" string="OrderFlow" name="orderflow">
+                <app data-string="OrderFlow" string="OrderFlow" name="orderflow_connector">
                     <block title="🔌 Configuración de Conexión OrderFlow SaaS" id="orderflow_connector_setting">
                         <setting id="orderflow_enable_setting" string="Habilitar Integración con OrderFlow" help="Activa la sincronización bidireccional en tiempo real">
                             <field name="orderflow_enabled"/>
