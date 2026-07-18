@@ -18,6 +18,7 @@ Este módulo permite la integración fluida con la plataforma OrderFlow SaaS:
     'depends': ['base', 'sale', 'product'],
     'data': [
         'views/res_config_settings_views.xml',
+        'views/menu_views.xml',
     ],
     'installable': True,
     'application': True,

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Vista de Ajustes Inherit de OrderFlow -->
     <record id="res_config_settings_view_form_orderflow" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.inherit.orderflow</field>
         <field name="model">res.config.settings</field>
@@ -8,8 +9,8 @@
         <field name="arch" type="xml">
             <xpath expr="//form" position="inside">
                 <app data-string="OrderFlow" string="OrderFlow" name="orderflow">
-                    <block title="Integración con OrderFlow SaaS" id="orderflow_connector_setting">
-                        <setting id="orderflow_enable_setting" string="Habilitar Webhooks de OrderFlow" help="Envía eventos en tiempo real al crear/modificar productos, clientes y ventas">
+                    <block title="🔌 Configuración de Conexión OrderFlow SaaS" id="orderflow_connector_setting">
+                        <setting id="orderflow_enable_setting" string="Habilitar Integración con OrderFlow" help="Activa la sincronización bidireccional en tiempo real">
                             <field name="orderflow_enabled"/>
                             <div class="content-group" invisible="not orderflow_enabled">
                                 <div class="row mt16">
@@ -20,11 +21,39 @@
                                     <label for="orderflow_api_key" class="col-lg-3 o_light_label"/>
                                     <field name="orderflow_api_key" placeholder="sk_..."/>
                                 </div>
+                                <div class="mt16">
+                                    <button name="action_test_orderflow_connection" type="object" string="⚡ Probar Conexión con OrderFlow" class="btn-primary me-2"/>
+                                    <button name="action_open_orderflow_web" type="object" string="🌐 Abrir Panel OrderFlow" class="btn-secondary"/>
+                                </div>
                             </div>
+                        </setting>
+                    </block>
+
+                    <block title="🔄 Selección de Datos a Compartir" id="orderflow_data_sharing_setting" invisible="not orderflow_enabled">
+                        <setting id="sync_partners_setting" string="Clientes y Contactos" help="Envía clientes creados o modificados a OrderFlow CRM">
+                            <field name="orderflow_sync_partners"/>
+                        </setting>
+                        <setting id="sync_products_setting" string="Catálogo de Productos y Precios" help="Sincroniza el catálogo de productos con la tienda OrderFlow">
+                            <field name="orderflow_sync_products"/>
+                        </setting>
+                        <setting id="sync_orders_setting" string="Pedidos de Venta" help="Envía los pedidos de venta confirmados a OrderFlow POS / KDS">
+                            <field name="orderflow_sync_orders"/>
+                        </setting>
+                        <setting id="sync_inventory_setting" string="Inventario y Stock" help="Envía actualizaciones de stock disponible a OrderFlow">
+                            <field name="orderflow_sync_inventory"/>
                         </setting>
                     </block>
                 </app>
             </xpath>
         </field>
+    </record>
+
+    <!-- Acción para abrir los ajustes de OrderFlow directo desde el menú -->
+    <record id="action_orderflow_config" model="ir.actions.act_window">
+        <field name="name">Panel de Gestión OrderFlow</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'orderflow_connector', 'bin_size': False}</field>
     </record>
 </odoo>

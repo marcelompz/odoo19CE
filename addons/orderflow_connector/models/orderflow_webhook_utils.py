@@ -15,6 +15,16 @@ def send_webhook_async(env, event_type, payload):
     if not enabled:
         return
 
+    # Verificación de flags granulares por tipo de entidad
+    if 'partner' in event_type and ICP.get_param('orderflow.sync_partners', 'True') != 'True':
+        return
+    if 'product' in event_type and ICP.get_param('orderflow.sync_products', 'True') != 'True':
+        return
+    if 'sale.order' in event_type and ICP.get_param('orderflow.sync_orders', 'True') != 'True':
+        return
+    if 'inventory' in event_type and ICP.get_param('orderflow.sync_inventory', 'False') != 'True':
+        return
+
     webhook_url = ICP.get_param('orderflow.webhook_url', '').strip()
     api_key = ICP.get_param('orderflow.api_key', '').strip()
 
