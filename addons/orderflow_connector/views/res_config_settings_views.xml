@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_orderflow" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.orderflow</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="90"/>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='sale']" position="inside">
+                <block title="Integración con OrderFlow SaaS" id="orderflow_connector_setting">
+                    <setting id="orderflow_enable_setting" string="Habilitar Webhooks de OrderFlow" help="Envía eventos en tiempo real al crear/modificar productos, clientes y ventas">
+                        <field name="orderflow_enabled"/>
+                        <div class="content-group" invisible="not orderflow_enabled">
+                            <div class="row mt16">
+                                <label for="orderflow_webhook_url" class="col-lg-3 o_light_label"/>
+                                <field name="orderflow_webhook_url" placeholder="https://pesallaccia.com/api/v1/integrations/webhook/odoo"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="orderflow_api_key" class="col-lg-3 o_light_label"/>
+                                <field name="orderflow_api_key" placeholder="sk_..."/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
