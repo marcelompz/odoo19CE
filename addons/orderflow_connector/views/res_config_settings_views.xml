@@ -15,7 +15,7 @@
                             <div class="content-group" invisible="not orderflow_enabled">
                                 <div class="row mt16">
                                     <label for="orderflow_webhook_url" class="col-lg-3 o_light_label"/>
-                                    <field name="orderflow_webhook_url" placeholder="https://pesallaccia.com/api/v1/integrations/webhook/odoo"/>
+                                    <field name="orderflow_webhook_url" placeholder="https://pesallaccia.com/api/v1/integrations/orderflow/webhook"/>
                                 </div>
                                 <div class="row mt8">
                                     <label for="orderflow_api_key" class="col-lg-3 o_light_label"/>

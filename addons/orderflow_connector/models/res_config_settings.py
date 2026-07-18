@@ -18,8 +18,8 @@ class ResConfigSettings(models.TransientModel):
     orderflow_webhook_url = fields.Char(
         string="URL de Webhook OrderFlow",
         config_parameter='orderflow.webhook_url',
-        default="https://pesallaccia.com/api/v1/integrations/webhook/odoo",
-        help="Ejemplo: https://pesallaccia.com/api/v1/integrations/webhook/odoo"
+        default="https://pesallaccia.com/api/v1/integrations/orderflow/webhook",
+        help="Ejemplo: https://pesallaccia.com/api/v1/integrations/orderflow/webhook"
     )
     orderflow_api_key = fields.Char(
         string="API Key de Tenant OrderFlow",
