@@ -1,10 +1,10 @@
 {
     'name': 'OrderFlow Connector',
-    'version': '19.0.2.0.0',
+    'version': '19.0.2.0.1',
     'category': 'Sales/Sales',
     'summary': 'Sincronización bidireccional (Push/Pull) y Pull Import Wizard entre Odoo 19 CE y OrderFlow',
     'description': """
-OrderFlow Connector para Odoo 19 CE (v19.0.2.0.0)
+OrderFlow Connector para Odoo 19 CE (v19.0.2.0.1)
 ===================================================
 Este módulo permite la integración fluida con la plataforma OrderFlow SaaS:
 - Emisión automática de Webhooks al crear o modificar Clientes (res.partner).
@@ -18,6 +18,7 @@ Este módulo permite la integración fluida con la plataforma OrderFlow SaaS:
     'license': 'LGPL-3',
     'depends': ['base', 'sale', 'product'],
     'data': [
+        'security/ir.model.access.csv',
         'views/orderflow_import_wizard_views.xml',
         'views/res_config_settings_views.xml',
         'views/menu_views.xml',
