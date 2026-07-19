@@ -23,6 +23,7 @@
                                 </div>
                                 <div class="mt16">
                                     <button name="action_test_orderflow_connection" type="object" string="⚡ Probar Conexión con OrderFlow" class="btn-primary me-2"/>
+                                    <button name="%(action_orderflow_import_wizard)d" type="action" string="📥 Consultar e Importar Datos" class="btn-success me-2"/>
                                     <button name="action_open_orderflow_web" type="object" string="🌐 Abrir Panel OrderFlow" class="btn-secondary"/>
                                 </div>
                             </div>
