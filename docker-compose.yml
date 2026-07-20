@@ -70,16 +70,12 @@ services:
     env_file:
       - .env
     volumes:
-<<<<<<< HEAD
-      - ./addons:/mnt/extra-addons:ro
-      - /opt/odoo/odoo-modules/l10n_py:/mnt/extra-addons-l10n:ro
-=======
       - odoo-web-data:/var/lib/odoo
       - ./config:/etc/odoo
       - ./addons:/mnt/extra-addons
       - ${WEB_ADDONS_CUSTOMIZE:-./addons}:/mnt/extra-addons-customize
       - ${WEB_ADDONS_L10NPY:-/srv/odoo-modules/l10n_py}:/mnt/extra-addons-l10py
->>>>>>> 77a2dc0580655498b127fc68f04da2463568a7a9
+      - ./migracion:/mnt/migracion
       - ./init_prod_db.sh:/init_prod_db.sh:ro
       - ./modules.conf:/modules.conf:ro
       - ./migracion:/mnt/migracion
