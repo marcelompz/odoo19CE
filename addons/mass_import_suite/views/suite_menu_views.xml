@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_mass_import_suite_root"
+              name="Mass Import Suite"
+              web_icon="mass_import_suite,static/description/icon.png"
+              sequence="50"/>
+
+    <menuitem id="menu_suite_products"
+              name="Productos"
+              parent="menu_mass_import_suite_root"
+              action="product_mass_import_wizard_action"
+              sequence="10"/>
+
+    <menuitem id="menu_suite_recipes"
+              name="Recetas"
+              parent="menu_mass_import_suite_root"
+              action="action_excel_recipe_import_wizard"
+              sequence="20"/>
+</odoo>
