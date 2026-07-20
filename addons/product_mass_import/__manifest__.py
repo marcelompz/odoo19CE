@@ -54,7 +54,6 @@
         'security/ir.model.access.csv',
         'views/product_mass_import_wizard_views.xml',
         'views/product_batch_import_views.xml',
-        'views/menu_views.xml',
     ],
     'external_dependencies': {
         'python': ['openpyxl'],
