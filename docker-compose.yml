@@ -10,7 +10,7 @@ services:
     volumes:
       - odoo-web-data:/var/lib/odoo
       - ./addons:/mnt/extra-addons:ro
-      - /srv/odoo-modules/l10n_py:/mnt/extra-addons-l10n:ro  # Clone from github.com/marcelompz/odoo-l10n-py
+      - /opt/odoo/odoo-modules/l10n_py:/mnt/extra-addons-l10n:ro  # Clone from github.com/marcelompz/odoo-l10n-py
     command: >
       bash -c "pip3 install --break-system-packages tu-ruc-python-client && odoo --addons-path=/mnt/extra-addons,/mnt/extra-addons-l10n,/usr/lib/python3/dist-packages/odoo/addons --db_host=${DB_HOST} --db_port=${DB_PORT} --db_user=${DB_USER} --db_password=${DB_PASSWORD}"
     environment:
@@ -78,7 +78,7 @@ services:
         condition: service_healthy
     volumes:
       - ./addons:/mnt/extra-addons:ro
-      - /srv/odoo-modules/l10n_py:/mnt/extra-addons-l10n:ro
+      - /opt/odoo/odoo-modules/l10n_py:/mnt/extra-addons-l10n:ro
       - ./init_prod_db.sh:/init_prod_db.sh:ro
     environment:
       - DB_NAME=prod
