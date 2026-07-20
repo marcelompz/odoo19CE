@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
+<odoo>
     <data>
         <record id="product_batch_import_view_form" model="ir.ui.view">
             <field name="name">product.batch.import.form</field>
@@ -45,7 +45,7 @@
                         <notebook>
                             <page string="Productos" name="products">
                                 <field name="line_ids">
-                                    <tree editable="bottom" decoration-danger="error_message != False"
+                                    <list editable="bottom" decoration-danger="error_message != False"
                                           decoration-success="is_valid == True and product_id != False">
                                         <field name="sequence" widget="handle"/>
                                         <field name="default_code" required="1"/>
@@ -60,22 +60,22 @@
                                         <field name="list_price"/>
                                         <field name="standard_price"/>
                                         <field name="qty_on_hand"/>
-                                        <field name="is_valid" invisible="1"/>
-                                        <field name="error_message" invisible="1"/>
-                                        <field name="product_id" readonly="1" invisible="1"/>
+                                        <field name="is_valid" column_invisible="1"/>
+                                        <field name="error_message" optional="show"/>
+                                        <field name="product_id" readonly="1" optional="show"/>
                                         <button name="action_delete" type="object" string="Eliminar"
                                                 class="btn-danger" icon="fa-trash"
                                                 invisible="parent.state != 'draft'"/>
-                                    </tree>
+                                    </list>
                                 </field>
                             </page>
                         </notebook>
                     </sheet>
-                    <div class="oe_chatter">
+                    <chatter>
                         <field name="message_follower_ids"/>
                         <field name="activity_ids"/>
                         <field name="message_ids"/>
-                    </div>
+                    </chatter>
                 </form>
             </field>
         </record>
@@ -84,7 +84,7 @@
             <field name="name">product.batch.import.tree</field>
             <field name="model">product.batch.import</field>
             <field name="arch" type="xml">
-                <tree string="Importaciones en Lote">
+                <list string="Importaciones en Lote">
                     <field name="name"/>
                     <field name="location_id"/>
                     <field name="product_count"/>
@@ -92,7 +92,7 @@
                     <field name="invalid_count"/>
                     <field name="state"/>
                     <field name="company_id" groups="base.group_multi_company"/>
-                </tree>
+                </list>
             </field>
         </record>
 
@@ -113,7 +113,7 @@
         <record id="product_batch_import_action" model="ir.actions.act_window">
             <field name="name">Importación en Lote de Productos</field>
             <field name="res_model">product.batch.import</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
             <field name="search_view_id" ref="product_batch_import_view_search"/>
             <field name="context">{'default_name': 'Nuevo'}</field>
             <field name="help" type="html">
@@ -126,4 +126,4 @@
             </field>
         </record>
     </data>
-</openerp>
+</odoo>

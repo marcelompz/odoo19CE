@@ -78,7 +78,7 @@ def find_best_match_category(category_name, categories_env):
     return None
 
 
-class ProductMassImportWizard(models.Model):
+class ProductMassImportWizard(models.TransientModel):
     _name = 'product.mass.import.wizard'
     _description = 'Wizard de Importación Masiva de Productos desde Excel'
 
@@ -417,12 +417,31 @@ class ProductMassImportWizard(models.Model):
 
         self.write({'state': 'done'})
 
+        # Construir mensaje detallado
+        message = _('Se crearon %d productos exitosamente.') % len(created_products)
+        
+        if categories_matched:
+            matched_list = ', '.join([f'"{orig}" → "{match}"' for orig, match in categories_matched])
+            message += f'\n\n📁 Categorías reutilizadas (fuzzy match): {matched_list}'
+        
+        if categories_created:
+            created_list = ', '.join(categories_created)
+            message += f'\n📁 Categorías creadas: {created_list}'
+
         return {
-            'type': 'ir.actions.act_window_close',
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Proceso Completado'),
+                'message': message,
+                'type': 'success',
+                'next': {'type': 'ir.actions.act_window_close'},
+                'sticky': True,  # Mantener notificación visible para que el usuario vea el detalle
+            }
         }
 
 
-class ProductMassImportPreview(models.Model):
+class ProductMassImportPreview(models.TransientModel):
     _name = 'product.mass.import.preview'
     _description = 'Vista Previa de Importación de Productos'
     _order = 'row_number'

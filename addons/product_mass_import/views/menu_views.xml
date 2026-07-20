@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
+<odoo>
     <data>
         <menuitem id="menu_product_mass_import_root"
                   name="Importación Masiva"
@@ -19,4 +19,4 @@
                   action="product_batch_import_action"
                   sequence="20"/>
     </data>
-</openerp>
+</odoo>

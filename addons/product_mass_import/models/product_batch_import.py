@@ -245,7 +245,16 @@ class ProductBatchImport(models.Model):
 
             return {
                 'type': 'ir.actions.client',
-                'tag': 'reload',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Proceso Completado'),
+                    'message': message,
+                    'type': 'success',
+                    'sticky': True,
+                    'next': {
+                        'type': 'ir.actions.act_window_reload',
+                    },
+                },
             }
         return True
 
