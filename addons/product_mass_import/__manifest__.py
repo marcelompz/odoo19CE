@@ -48,12 +48,13 @@
     'website': 'https://www.crossnexion.com',
     'license': 'OPL-1',
     'depends': ['product', 'stock', 'point_of_sale'],
-    'icon': 'product_mass_import/static/description/icon.svg',
+    'icon': 'product_mass_import/static/description/icon.png',
     'data': [
         'data/sequence.xml',
         'security/ir.model.access.csv',
         'views/product_mass_import_wizard_views.xml',
         'views/product_batch_import_views.xml',
+        'views/menu_views.xml',
     ],
     'external_dependencies': {
         'python': ['openpyxl'],
