@@ -1,4 +1,0 @@
-# Requirements for product_mass_import module
-# Install with: pip install -r requirements.txt
-
-openpyxl>=3.0.0

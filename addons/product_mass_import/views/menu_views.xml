@@ -5,7 +5,8 @@
     <menuitem id="menu_product_mass_import_root"
               name="Importación Masiva"
               parent="stock.menu_stock_root"
-              sequence="50"/>
+              sequence="50"
+              icon="product_mass_import,static/description/icon.png"/>
 
     <!-- Excel Import Menu -->
     <menuitem id="menu_product_mass_import_excel"
