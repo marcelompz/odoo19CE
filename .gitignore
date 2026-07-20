@@ -6,7 +6,6 @@ __pycache__/
 *.pyc
 
 test_scripts/
-migracion/
 electropar_images/
 
 # Temporary import files

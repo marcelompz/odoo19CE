@@ -1,10 +1,30 @@
 FROM odoo:19.0
 
+LABEL MAINTAINER="Crossnexion EAS <contacto@crossnexion.com>"
+
 USER root
 
-LABEL MAINTAINER = "Crossnexion EAS <contacto@crossnexion.com>"
+# Install heavy dependencies via Debian apt as pre-compiled binary packages to avoid slow compilation
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-pandas \
+    python3-openpyxl \
+    python3-xlrd \
+    python3-xlwt \
+    python3-paramiko \
+    python3-boto3 \
+    python3-dropbox \
+    python3-dnspython \
+    python3-openssl \
+    python3-packaging \
+    python3-pip \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install --break-system-packages -r /tmp/requirements.txt
+# Install lightweight pure-python packages that don't require compilation
+RUN pip install --break-system-packages \
+    pyncclient \
+    nextcloud-api-wrapper \
+    "openpyxl>=3.1.5" \
+    tu-ruc-python-client \
+    qifparse
 
 USER odoo

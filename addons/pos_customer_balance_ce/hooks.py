@@ -25,10 +25,16 @@ def post_init_hook(env):
             ], limit=1)
             
             if not receivable_account:
-                receivable_account = env['account.account'].search([
-                    ('account_type', '=', 'asset_receivable'),
-                    ('company_id', '=', company.id)
-                ], limit=1)
+                if 'company_id' in env['account.account']._fields:
+                    receivable_account = env['account.account'].search([
+                        ('account_type', '=', 'asset_receivable'),
+                        ('company_id', '=', company.id)
+                    ], limit=1)
+                else:
+                    receivable_account = env['account.account'].search([
+                        ('account_type', '=', 'asset_receivable'),
+                        ('company_ids', 'in', company.id)
+                    ], limit=1)
                 
             if receivable_account:
                 company.account_default_pos_receivable_account_id = receivable_account

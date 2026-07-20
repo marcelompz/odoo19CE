@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de Formulario del Wizard de Importación -->
+    <record id="view_orderflow_import_wizard_form" model="ir.ui.view">
+        <field name="name">orderflow.import.wizard.form</field>
+        <field name="model">orderflow.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="📥 Importador de Datos desde OrderFlow">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>📥 Consultar e Importar desde OrderFlow SaaS</h1>
+                        <p class="text-muted">
+                            Seleccioná el tipo de datos que querés consultar en OrderFlow. Podrás revisar el listado, marcar los registros deseados e importarlos directamente a tu base de datos de Odoo.
+                        </p>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="entity_type" widget="radio"/>
+                        </group>
+                        <group>
+                            <button name="action_fetch_orderflow_data"
+                                    string="🔍 Consultar Datos en OrderFlow"
+                                    type="object"
+                                    class="btn-primary"
+                                    icon="fa-search"/>
+                        </group>
+                    </group>
+
+                    <separator string="Registros Encontrados"/>
+
+                    <field name="line_ids">
+                        <list editable="bottom" create="false" delete="true">
+                            <field name="selected" widget="boolean_toggle"/>
+                            <field name="name" readonly="1"/>
+                            <field name="email_or_sku" readonly="1"/>
+                            <field name="detail_info" readonly="1"/>
+                            <field name="import_status" widget="badge"
+                                   decoration-info="import_status == 'pending'"
+                                   decoration-success="import_status == 'done'"
+                                   decoration-danger="import_status == 'error'"/>
+                            <field name="error_message" readonly="1" optional="hide"/>
+                        </list>
+                    </field>
+                </sheet>
+                <footer>
+                    <button name="action_import_selected_records"
+                            string="📥 Importar Seleccionados a Odoo"
+                            type="object"
+                            class="btn-success"
+                            icon="fa-download"/>
+                    <button string="Cerrar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción de Ventana para el Wizard -->
+    <record id="action_orderflow_import_wizard" model="ir.actions.act_window">
+        <field name="name">📥 Importar desde OrderFlow</field>
+        <field name="res_model">orderflow.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Menú en la App OrderFlow -->
+    <menuitem id="menu_orderflow_import_wizard"
+              name="📥 Importador de Datos"
+              parent="menu_orderflow_root"
+              action="action_orderflow_import_wizard"
+              sequence="20"/>
+</odoo>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Menú Principal Top-Level de OrderFlow en Odoo -->
+    <menuitem id="menu_orderflow_root"
+              name="OrderFlow"
+              web_icon="orderflow_connector,static/description/icon.png"
+              sequence="15"/>
+
+    <!-- Submenú 1: Panel de Gestión -->
+    <menuitem id="menu_orderflow_config"
+              name="Panel de Gestión"
+              parent="menu_orderflow_root"
+              action="action_orderflow_config"
+              sequence="10"/>
+</odoo>

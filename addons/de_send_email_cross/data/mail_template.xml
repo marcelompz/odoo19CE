@@ -38,7 +38,7 @@
         <record id="send_nr_by_email_cross" model="mail.template">
             <field name="name">Crossnexion: Envío de nota de remisión electrónica por email</field>
             <field name="model_id" ref="electronic_invoice_cross.model_stock_picking"/>
-            <field name="email_from">{{ (object.de_email_formatted_send or object.invoice_user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="email_from">{{ (object.de_email_formatted_send or object.user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
             <field name="subject">{{ object.authorization_id.latam_doc_type_id.name }} {{ object.invoice_number }} emitida.!</field>
             <field name="description">Envío de documento electrónico por email</field>
             <field name="email_to">{{ object.partner_id.email }}</field>
