@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<odoo>
+<openerp>
     <data>
         <record id="product_mass_import_preview_view_list" model="ir.ui.view">
             <field name="name">product.mass.import.preview.list</field>
             <field name="model">product.mass.import.preview</field>
             <field name="arch" type="xml">
-                <list create="0" delete="0" decoration-danger="error_message != False">
-                    <field name="row_number"/>
-                    <field name="default_code"/>
-                    <field name="name"/>
-                    <field name="pos_description"/>
-                    <field name="barcode"/>
-                    <field name="categ_name"/>
-                    <field name="pos_categ_name"/>
-                    <field name="list_price"/>
-                    <field name="standard_price"/>
-                    <field name="qty_on_hand"/>
-                    <field name="product_type"/>
-                    <field name="tracking"/>
-                    <field name="available_in_pos"/>
-                    <field name="error_message"/>
-                    <field name="is_valid" column_invisible="1"/>
-                </list>
+            <list create="0" delete="0" decoration-danger="error_message != False">
+                <field name="row_number"/>
+                <field name="default_code"/>
+                <field name="name"/>
+                <field name="pos_description"/>
+                <field name="barcode"/>
+                <field name="categ_name"/>
+                <field name="pos_categ_name"/>
+                <field name="list_price"/>
+                <field name="standard_price"/>
+                <field name="qty_on_hand"/>
+                <field name="product_type"/>
+                <field name="tracking"/>
+                <field name="available_in_pos"/>
+                <field name="error_message"/>
+                <field name="is_valid" invisible="1"/>
+            </list>
             </field>
         </record>
 
@@ -66,7 +66,7 @@
                                         <field name="tracking"/>
                                         <field name="available_in_pos"/>
                                         <field name="error_message"/>
-                                    </list>
+                                    </tree>
                                 </field>
                             </page>
                         </notebook>
@@ -93,4 +93,4 @@
             <field name="target">new</field>
         </record>
     </data>
-</odoo>
+</openerp>
