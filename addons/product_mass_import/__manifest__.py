@@ -48,7 +48,7 @@
     'website': 'https://www.crossnexion.com',
     'license': 'OPL-1',
     'depends': ['product', 'stock', 'point_of_sale'],
-    'icon': 'product_mass_import/static/description/icon.png',
+    'icon': 'product_mass_import/static/description/icon.svg',
     'data': [
         'data/sequence.xml',
         'security/ir.model.access.csv',
