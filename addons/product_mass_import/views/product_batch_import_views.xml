@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openerp>
+<odoo>
+
     <record id="product_batch_import_view_form" model="ir.ui.view">
         <field name="name">product.batch.import.form</field>
         <field name="model">product.batch.import</field>
@@ -128,8 +129,7 @@
     <menuitem id="menu_product_mass_import_root"
               name="Importación Masiva"
               parent="stock.menu_stock_root"
-              sequence="50"
-              icon="product_mass_import,static/description/icon.png"/>
+              sequence="50"/>
 
     <menuitem id="menu_product_mass_import_excel"
               name="Importar desde Excel"
@@ -142,4 +142,4 @@
               parent="menu_product_mass_import_root"
               action="product_batch_import_action"
               sequence="20"/>
-</openerp>
+</odoo>
