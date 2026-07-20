@@ -2,7 +2,7 @@
 # Setup script para módulos l10n_py en el servidor (HOST only)
 set -e
 
-L10N_PY_DIR="/srv/odoo-modules/l10n_py"
+L10N_PY_DIR="/opt/odoo/odoo-modules/l10n_py"
 GITHUB_SSH="git@github.com:marcelompz/odoo-l10n-py.git"
 
 echo "=== Setup de módulos l10n_py (HOST) ==="

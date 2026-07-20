@@ -74,6 +74,8 @@ python3 << PYEOF
 import sys
 sys.path.insert(0, '/usr/lib/python3/dist-packages')
 import odoo
+import odoo.tools
+import odoo.modules.registry
 from odoo import api, SUPERUSER_ID
 
 odoo.tools.config.parse_config([
@@ -84,7 +86,7 @@ odoo.tools.config.parse_config([
 ])
 
 try:
-    registry = odoo.registry('$DB_NAME')
+    registry = odoo.modules.registry.Registry('$DB_NAME')
     with registry.cursor() as cr:
         env = api.Environment(cr, SUPERUSER_ID, {})
         user = env['res.users'].search([('login', '=', '$ADMIN_EMAIL')], limit=1)
