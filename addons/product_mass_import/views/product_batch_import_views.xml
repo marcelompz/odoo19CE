@@ -128,7 +128,7 @@
 
     <menuitem id="menu_product_mass_import_root"
               name="Importación Masiva"
-              parent="base.menu_main_menu"
+              web_icon="product_mass_import,static/description/icon.png"
               sequence="50"/>
 
     <menuitem id="menu_product_mass_import_excel"
