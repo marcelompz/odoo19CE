@@ -19,6 +19,12 @@ class ExcelRecipeImportWizard(models.TransientModel):
 
     import_file = fields.Binary('Archivo Excel', required=False)
     import_filename = fields.Char('Nombre del Archivo')
+    import_type = fields.Selection([
+        ('products', 'Productos'),
+        ('mrp_bom', 'BoM de Fabricación'),
+        ('pos_bom', 'BoM POS'),
+        ('all', 'Todo'),
+    ], string='Tipo de Importación', default='all', required=True)
 
     def action_download_template(self):
         """Descargar la plantilla de importación"""
