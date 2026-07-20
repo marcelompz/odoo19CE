@@ -13,18 +13,11 @@ services:
       - .env
     volumes:
       - odoo-web-data:/var/lib/odoo
-<<<<<<< HEAD
-      - ./addons:/mnt/extra-addons:ro
-      - /opt/odoo/odoo-modules/l10n_py:/mnt/extra-addons-l10n:ro  # Clone from github.com/marcelompz/odoo-l10n-py
-    command: >
-      bash -c "pip3 install --break-system-packages tu-ruc-python-client && odoo --addons-path=/mnt/extra-addons,/mnt/extra-addons-l10n,/usr/lib/python3/dist-packages/odoo/addons --db_host=${DB_HOST} --db_port=${DB_PORT} --db_user=${DB_USER} --db_password=${DB_PASSWORD}"
-=======
       - ./config:/etc/odoo
       - ./addons:/mnt/extra-addons
       - ${WEB_ADDONS_CUSTOMIZE:-./addons}:/mnt/extra-addons-customize
-      - ${WEB_ADDONS_L10NPY:-/srv/odoo-modules/l10n_py}:/mnt/extra-addons-l10py
+      - ${WEB_ADDONS_L10NPY:-/srv/odoo-modules/l10n_py}:/mnt/extra-addons-l10n
       - ./migracion:/mnt/migracion
->>>>>>> 77a2dc0580655498b127fc68f04da2463568a7a9
     environment:
       - HOST=${DB_HOST:-db5436}
       - USER=${DB_USER:-odoo}
