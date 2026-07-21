@@ -2,7 +2,6 @@
 <odoo>
     <menuitem id="menu_mass_import_suite_root"
               name="Mass Import Suite"
-              parent="base.menu_base"
               web_icon="mass_import_suite,static/description/icon.png"
               action="mass_import_suite.action_mass_import_suite_launcher"
               sequence="50"/>

@@ -168,6 +168,14 @@ class ProductMassImportWizard(models.TransientModel):
             'target': 'new',
         }
 
+    def action_back_to_launcher(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'mass.import.suite',
+            'view_mode': 'form',
+            'target': 'current',
+        }
+
     def action_parse_excel(self):
         """Parse Excel file and show preview - OPTIMIZED with batch barcode validation"""
         self.ensure_one()

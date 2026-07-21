@@ -72,6 +72,7 @@
                         </notebook>
 
                         <footer>
+                            <button name="action_back_to_launcher" type="object" string="Volver" class="btn-secondary"/>
                             <button name="action_parse_excel" type="object" string="Cargar Archivo"
                                     class="btn-primary" 
                                     invisible="state != 'draft'"/>
@@ -90,7 +91,6 @@
             <field name="name">Importación Masiva desde Excel</field>
             <field name="res_model">product.mass.import.wizard</field>
             <field name="view_mode">form</field>
-            <field name="target">new</field>
         </record>
     </data>
 </openerp>

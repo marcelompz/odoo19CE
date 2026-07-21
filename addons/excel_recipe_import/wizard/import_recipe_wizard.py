@@ -28,6 +28,7 @@ class ExcelRecipeImportWizard(models.TransientModel):
 
     def action_download_template(self):
         """Descargar la plantilla de importación"""
+        """Descargar la plantilla de importación"""
         template_path = 'excel_recipe_import/data/plantilla_importacion.xlsx'
         try:
             with odoo.tools.file_open(template_path, 'rb') as file:
@@ -54,6 +55,14 @@ class ExcelRecipeImportWizard(models.TransientModel):
             'type': 'ir.actions.act_url',
             'url': '/web/content/%s?download=true' % attachment_id.id,
             'target': 'new',
+        }
+
+    def action_back_to_launcher(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'mass.import.suite',
+            'view_mode': 'form',
+            'target': 'current',
         }
 
     def action_export_missing_pos_bom(self):

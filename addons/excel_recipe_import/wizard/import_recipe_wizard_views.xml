@@ -20,6 +20,7 @@
                     </group>
                 </group>
                 <footer>
+                    <button name="action_back_to_launcher" type="object" string="Volver" class="btn-secondary"/>
                     <button name="action_validate" string="Validar Archivo" type="object" class="btn-info" style="background-color: #17a2b8; color: white;"/>
                     <button name="action_import" string="Importar" type="object" class="btn-primary"/>
                     <button name="action_download_template" string="Descargar Plantilla Base" type="object" class="btn-secondary"/>
@@ -34,7 +35,6 @@
         <field name="name">Importar Recetas Excel</field>
         <field name="res_model">excel.recipe.import.wizard</field>
         <field name="view_mode">form</field>
-        <field name="target">new</field>
     </record>
 
     <!-- <menuitem id="menu_excel_recipe_import_main"

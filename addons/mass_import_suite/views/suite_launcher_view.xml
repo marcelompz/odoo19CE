@@ -9,32 +9,20 @@
                     <div class="alert alert-info" role="alert">
                         Seleccione el tipo de importación que desea realizar:
                     </div>
-                    <notebook>
-                        <page string="Productos" name="products">
-                            <group>
-                                <div class="text-center mt16">
-                                    <p>Importe productos de forma masiva desde Excel, con validación previa y vista previa.</p>
-                                    <button name="action_open_product_import"
-                                            string="Importar Productos"
-                                            type="object"
-                                            class="btn-primary btn-lg"
-                                            icon="fa-download"/>
-                                </div>
-                            </group>
-                        </page>
-                        <page string="Recetas" name="recipes">
-                            <group>
-                                <div class="text-center mt16">
-                                    <p>Importe recetas de Fabricación (MRP) y POS BoM desde Excel.</p>
-                                    <button name="action_open_recipe_import"
-                                            string="Importar Recetas"
-                                            type="object"
-                                            class="btn-info btn-lg"
-                                            icon="fa-file-excel-o"/>
-                                </div>
-                            </group>
-                        </page>
-                    </notebook>
+                    <group>
+                        <button name="action_open_product_import"
+                                string="Importar Productos"
+                                type="object"
+                                class="btn-primary btn-lg"
+                                icon="fa-download"
+                                style="width:100%; margin-bottom:16px;"/>
+                        <button name="action_open_recipe_import"
+                                string="Importar Recetas"
+                                type="object"
+                                class="btn-info btn-lg"
+                                icon="fa-file-excel-o"
+                                style="width:100%;"/>
+                    </group>
                 </sheet>
             </form>
         </field>
