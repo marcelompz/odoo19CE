@@ -168,12 +168,13 @@ class ProductMassImportWizard(models.TransientModel):
             'target': 'new',
         }
 
-    def action_back_to_launcher(self):
+    def action_open_recipe_import(self):
         return {
             'type': 'ir.actions.act_window',
-            'res_model': 'mass.import.suite',
+            'res_model': 'excel.recipe.import.wizard',
             'view_mode': 'form',
-            'target': 'current',
+            'target': 'new',
+            'context': dict(self.env.context),
         }
 
     def action_parse_excel(self):
