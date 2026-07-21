@@ -37,22 +37,21 @@
         <field name="target">new</field>
     </record>
 
-    <!-- <menuitem id="menu_excel_recipe_root" name="Importador Excel" sequence="50"/> -->
-    <menuitem id="menu_excel_recipe_import_main"
+    <!-- <menuitem id="menu_excel_recipe_import_main"
               name="Importar Recetas"
               parent="menu_mass_import_suite_root"
               action="excel_recipe_import.action_excel_recipe_import_wizard"
-              sequence="10"/>
+              sequence="10"/> -->
 
     <!-- <menuitem id="menu_excel_recipe_import_mrp"
-              name="Importador Excel"
-              parent="mrp.menu_mrp_root"
-              action="action_excel_recipe_import_wizard"
-              sequence="50"/> -->
+              name="Importador Excel (MRP)"
+              parent="menu_mass_import_suite_root"
+              action="excel_recipe_import.action_excel_recipe_import_wizard"
+              sequence="20"/> -->
 
     <!-- <menuitem id="menu_excel_recipe_import_pos"
-              name="Importador Excel"
-              parent="point_of_sale.menu_point_root"
-              action="action_excel_recipe_import_wizard"
-              sequence="50"/> -->
+              name="Importador Excel (POS)"
+              parent="menu_mass_import_suite_root"
+              action="excel_recipe_import.action_excel_recipe_import_wizard"
+              sequence="30"/> -->
 </odoo>
