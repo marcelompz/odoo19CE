@@ -78,10 +78,11 @@ def find_best_match_category(category_name, categories_env):
     return None
 
 
-class ProductMassImportWizard(models.TransientModel):
+class ProductMassImportWizard(models.Model):
     _name = 'product.mass.import.wizard'
     _description = 'Wizard de Importación Masiva de Productos desde Excel'
 
+    name = fields.Char(string='Nombre', default='Nuevo')
     file_data = fields.Binary(string='Archivo Excel (.xlsx)', required=True)
     filename = fields.Char(string='Nombre del Archivo')
     location_id = fields.Many2one(
@@ -110,6 +111,14 @@ class ProductMassImportWizard(models.TransientModel):
     def _compute_product_count(self):
         for wizard in self:
             wizard.product_count = len(wizard.preview_ids)
+
+    def action_save_draft(self):
+        self.ensure_one()
+        self.state = 'draft'
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'reload',
+        }
 
     def action_download_template(self):
         """Download Excel template for product import"""
@@ -390,12 +399,13 @@ class ProductMassImportWizard(models.TransientModel):
                 'barcode': preview.barcode or False,
                 'list_price': preview.list_price,
                 'standard_price': preview.standard_price,
-                'detailed_type': preview.product_type,
+                'type': preview.product_type,
                 'categ_id': categ_id,
                 'tracking': preview.tracking,
                 'available_in_pos': preview.available_in_pos,
                 'uom_id': default_uom_id,
                 'uom_po_id': default_uom_id,
+                'service_tracking': 'no',
             }
 
             if preview.pos_description:
@@ -411,7 +421,14 @@ class ProductMassImportWizard(models.TransientModel):
                 products_to_quant.append((len(product_vals_list) - 1, preview.qty_on_hand))
 
         # Creación masiva en una sola operación
-        created_products = self.env['product.product'].create(product_vals_list)
+        import logging
+        _logger = logging.getLogger('product_mass_import')
+        try:
+            created_products = self.env['product.product'].create(product_vals_list)
+        except Exception as e:
+            _logger.error('Error creando productos masivos: %s', e)
+            _logger.error('Datos: %s', product_vals_list)
+            raise UserError(_("Error al crear productos: %s") % str(e))
 
         # APLICAR INVENTARIO MASIVO - Batch processing
         if products_to_quant and self.location_id:
@@ -474,12 +491,12 @@ class ProductMassImportPreview(models.TransientModel):
     standard_price = fields.Float(string='Precio de Costo')
     qty_on_hand = fields.Float(string='Cantidad a la Mano')
     product_type = fields.Selection([
-        ('product', 'Almacenable'),
+        ('product', 'Bienes'),
         ('consu', 'Consumible'),
         ('service', 'Servicio'),
     ], string='Tipo de Producto', default='product')
     tracking = fields.Selection([
-        ('none', 'Ninguno'),
+        ('none', 'Por cantidad'),
         ('lot', 'Por Lote'),
         ('serial', 'Por Número de Serie'),
     ], string='Trazabilidad', default='none')
