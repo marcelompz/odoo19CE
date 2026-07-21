@@ -473,7 +473,7 @@ class ProductMassImportWizard(models.Model):
         }
 
 
-class ProductMassImportPreview(models.TransientModel):
+class ProductMassImportPreview(models.Model):
     _name = 'product.mass.import.preview'
     _description = 'Vista Previa de Importación de Productos'
     _order = 'row_number'

@@ -24,6 +24,34 @@
         </field>
     </record>
 
+    <record id="product_mass_import_wizard_view_tree" model="ir.ui.view">
+        <field name="name">product.mass.import.wizard.tree</field>
+        <field name="model">product.mass.import.wizard</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'draft'" decoration-success="state == 'done'">
+                <field name="name"/>
+                <field name="state"/>
+                <field name="product_count"/>
+                <field name="location_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="product_mass_import_wizard_view_search" model="ir.ui.view">
+        <field name="name">product.mass.import.wizard.search</field>
+        <field name="model">product.mass.import.wizard</field>
+        <field name="arch" type="xml">
+            <search string="Buscar Importaciones">
+                <field name="name"/>
+                <field name="state"/>
+                <separator/>
+                <filter name="draft" string="Borradores" domain="[('state', '=', 'draft')]"/>
+                <filter name="preview" string="Vista Previa" domain="[('state', '=', 'preview')]"/>
+                <filter name="done" string="Completados" domain="[('state', '=', 'done')]"/>
+            </search>
+        </field>
+    </record>
+
     <record id="product_mass_import_wizard_view_form" model="ir.ui.view">
         <field name="name">product.mass.import.wizard.form</field>
         <field name="model">product.mass.import.wizard</field>
@@ -43,6 +71,7 @@
                     </div>
                     <group>
                         <group>
+                            <field name="name"/>
                             <field name="file_data" filename="filename"/>
                             <field name="filename" invisible="1"/>
                             <field name="location_id"/>
@@ -74,6 +103,9 @@
                     </field>
 
                     <footer>
+                        <button name="action_save_draft" type="object" string="Guardar"
+                                class="btn-secondary"
+                                invisible="state == 'done'"/>
                         <button name="action_confirm_import" type="object" string="Confirmar Importación"
                                 class="btn-primary"
                                 invisible="state != 'preview'"/>
@@ -88,6 +120,16 @@
     <record id="product_mass_import_wizard_action" model="ir.actions.act_window">
         <field name="name">Importación Masiva desde Excel</field>
         <field name="res_model">product.mass.import.wizard</field>
-        <field name="view_mode">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="product_mass_import_wizard_view_search"/>
+        <field name="context">{'default_name': 'Nuevo'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear nueva importación masiva
+            </p>
+            <p>
+                Cree productos masivamente desde Excel o ingréselos manualmente en la planilla.
+            </p>
+        </field>
     </record>
 </odoo>
