@@ -155,6 +155,36 @@ class ExcelRecipeImportWizard(models.TransientModel):
                 
         return product
 
+    def action_validate(self):
+        if not self.import_file:
+            raise UserError(_("Por favor, suba un archivo Excel para validar."))
+
+        if not pd:
+            raise UserError(_("La librería 'pandas' no está instalada."))
+
+        file_content = base64.b64decode(self.import_file)
+        try:
+            xl = pd.ExcelFile(io.BytesIO(file_content))
+        except Exception as e:
+            raise UserError(_("Formato de archivo inválido. Por favor, suba un archivo Excel (.xlsx). Error: %s") % str(e))
+
+        required_sheets = ['Products', 'MRP BoM (Subproducts)', 'POS BoM (Comidas)']
+        missing = [s for s in required_sheets if s not in xl.sheet_names]
+
+        if missing:
+            raise UserError(_("Faltan las siguientes hojas en el archivo: %s") % ', '.join(missing))
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Archivo Válido'),
+                'message': _("El archivo Excel contiene todas las hojas requeridas: %s") % ', '.join(xl.sheet_names),
+                'sticky': False,
+                'type': 'success',
+            }
+        }
+
     def action_import(self):
         if not self.import_file:
             raise UserError(_("Por favor, suba un archivo Excel para importar."))
