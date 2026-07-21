@@ -84,6 +84,12 @@ class ProductMassImportWizard(models.Model):
 
     name = fields.Char(string='Nombre', default='Nuevo')
     file_data = fields.Binary(string='Archivo Excel (.xlsx)', required=True)
+
+    @api.model
+    def create(self, vals):
+        if vals.get('name', 'Nuevo') == 'Nuevo':
+            vals['name'] = self.env['ir.sequence'].next_by_code('product.mass.import.wizard') or 'Nuevo'
+        return super(ProductMassImportWizard, self).create(vals)
     filename = fields.Char(string='Nombre del Archivo')
     location_id = fields.Many2one(
         'stock.location',
