@@ -367,6 +367,10 @@ class ProductMassImportWizard(models.TransientModel):
         product_vals_list = []
         products_to_quant = []
         
+        # Unidades de medida por defecto
+        default_uom = self.env.ref('uom.product_uom_unit', raise_if_not_found=False)
+        default_uom_id = default_uom.id if default_uom else False
+        
         # Buscar categoría por defecto (si no existe, usar la primera disponible)
         default_categ = self.env['product.category'].search([], limit=1, order='id')
         default_categ_id = default_categ.id if default_categ else False
@@ -386,10 +390,12 @@ class ProductMassImportWizard(models.TransientModel):
                 'barcode': preview.barcode or False,
                 'list_price': preview.list_price,
                 'standard_price': preview.standard_price,
-                'type': preview.product_type,
+                'detailed_type': preview.product_type,
                 'categ_id': categ_id,
                 'tracking': preview.tracking,
                 'available_in_pos': preview.available_in_pos,
+                'uom_id': default_uom_id,
+                'uom_po_id': default_uom_id,
             }
 
             if preview.pos_description:
