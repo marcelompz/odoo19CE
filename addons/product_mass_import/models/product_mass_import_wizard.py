@@ -122,8 +122,7 @@ class ProductMassImportWizard(models.Model):
         self.ensure_one()
         self.state = 'draft'
         return {
-            'type': 'ir.actions.client',
-            'tag': 'reload',
+            'type': 'ir.actions.act_window_close',
         }
 
     def action_download_template(self):
