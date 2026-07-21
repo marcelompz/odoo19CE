@@ -1,6 +1,6 @@
 {
     'name': 'Mass Import Suite',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.1.0',
     'category': 'Inventory/Products',
     'summary': 'Suite de importación masiva: productos y recetas',
     'description': """

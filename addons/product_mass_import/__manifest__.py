@@ -1,6 +1,6 @@
 {
     'name': 'Mass Product Import with Inventory',
-    'version': '19.0.1.4.2',
+    'version': '19.0.1.5.0',
     'category': 'Inventory/Products',
     'summary': 'Import products massively from Excel or manual entry with initial stock quantities',
     'description': """
