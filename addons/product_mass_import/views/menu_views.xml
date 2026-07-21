@@ -5,7 +5,7 @@
               web_icon="product_mass_import,static/description/icon.png"
               sequence="50"/> -->
 
-    <menuitem id="menu_product_mass_import_excel"
+    <!-- <menuitem id="menu_product_mass_import_excel"
               name="Importar desde Excel"
               parent="menu_mass_import_suite_root"
               action="product_mass_import_wizard_action"
@@ -15,5 +15,5 @@
               name="Creación en Lote"
               parent="menu_mass_import_suite_root"
               action="product_batch_import_action"
-              sequence="20"/>
+              sequence="20"/> -->
 </odoo>
