@@ -24,8 +24,8 @@
     ],
     'data': [
         'security/ir.model.access.csv',
-        'views/suite_menu_views.xml',
         'views/suite_launcher_view.xml',
+        'views/suite_menu_views.xml',
     ],
     'installable': True,
     'application': True,
