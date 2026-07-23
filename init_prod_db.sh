@@ -181,11 +181,15 @@ fi
 echo ""
 IMPORT_PRODUCTS_VAL="${IMPORT_PRODUCTS:-false}"
 if [ "$IMPORT_PRODUCTS_VAL" = "true" ] || [ "$IMPORT_PRODUCTS_VAL" = "1" ]; then
-    echo "  → Importando productos y comidas (IMPORT_PRODUCTS=true)..."
+    echo "  → Importando catálogo de productos y artículos (IMPORT_PRODUCTS=true)..."
     python3 /mnt/migracion/import_products_direct.py 2>/dev/null || true
-    python3 /mnt/migracion/import_comidas_direct.py 2>/dev/null || true
+    python3 /mnt/migracion/import_products_pos_direct.py 2>/dev/null || true
 else
     echo "  ℹ Importación automática de productos desactivada por defecto (IMPORT_PRODUCTS=false). Omitiendo."
+fi
+
+if [ -f "/mnt/migracion/import_boms_direct.py" ]; then
+    python3 /mnt/migracion/import_boms_direct.py 2>&1 || true
 fi
 
 # Importar empresa, usuarios y configuraciones desde /mnt/migracion
