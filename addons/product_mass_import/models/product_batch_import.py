@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unicodedata
-from odoo import models, fields, api, _
+from odoo import models, fields, api, Command, _
 from odoo.exceptions import UserError
 
 
@@ -200,7 +200,7 @@ class ProductBatchImport(models.Model):
                     product_vals['description_sale'] = line.pos_description
 
                 if pos_categ_id:
-                    product_vals['pos_categ_id'] = pos_categ_id
+                    product_vals['pos_categ_ids'] = [Command.set([pos_categ_id])]
 
                 product_vals_list.append(product_vals)
                 

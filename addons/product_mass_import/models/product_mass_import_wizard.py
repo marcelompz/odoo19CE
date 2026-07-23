@@ -3,7 +3,7 @@
 import base64
 import io
 import unicodedata
-from odoo import models, fields, api, _
+from odoo import models, fields, api, Command, _
 from odoo.exceptions import UserError
 
 import openpyxl
@@ -466,7 +466,7 @@ class ProductMassImportWizard(models.Model):
                 product_vals['description_sale'] = preview.pos_description
 
             if pos_categ_id:
-                product_vals['pos_categ_id'] = pos_categ_id
+                product_vals['pos_categ_ids'] = [Command.set([pos_categ_id])]
 
             product_vals_list.append(product_vals)
             
