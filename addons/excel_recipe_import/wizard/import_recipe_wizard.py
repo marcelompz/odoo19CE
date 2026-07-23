@@ -268,7 +268,7 @@ class ExcelRecipeImportWizard(models.TransientModel):
             for recipe_name, group in df_pos.groupby('Recipe'):
                 if str(recipe_name).lower() == 'nan':
                     continue
-                recipe_product = self._get_or_create_product(recipe_name, category_name='Comidas', available_in_pos=True)
+                recipe_product = self._get_or_create_product(recipe_name, category_name='Productos Manufacturados', available_in_pos=True)
                 
                 if not recipe_product:
                     continue
