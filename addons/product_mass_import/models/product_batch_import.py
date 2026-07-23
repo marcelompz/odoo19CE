@@ -98,11 +98,12 @@ class ProductBatchImport(models.Model):
                 res['location_id'] = warehouse.lot_stock_id.id
         return res
 
-    @api.model
-    def create(self, vals):
-        if vals.get('name', 'Nuevo') == 'Nuevo':
-            vals['name'] = self.env['ir.sequence'].next_by_code('product.batch.import') or 'Nuevo'
-        return super(ProductBatchImport, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('name', 'Nuevo') == 'Nuevo':
+                vals['name'] = self.env['ir.sequence'].next_by_code('product.batch.import') or 'Nuevo'
+        return super(ProductBatchImport, self).create(vals_list)
 
     def _compute_product_count(self):
         for batch in self:
