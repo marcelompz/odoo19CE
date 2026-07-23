@@ -114,8 +114,10 @@ if [ "$CLEAN_DB" = true ]; then
             exit 0
         fi
     fi
-    # Usar contenedor temporal para borrar las carpetas del host que tienen permisos de root
-    docker run --rm -v "${DB_VOLS}":/db -v "${WEB_VOLS}":/web alpine sh -c "rm -rf /db/* /web/*"
+    # Eliminar volúmenes nombrados de Docker explícitamente
+    COMPOSE_PROJECT=$(basename "$PWD" | tr -d '._-')
+    docker volume rm ${COMPOSE_PROJECT}_odoo-db-data ${COMPOSE_PROJECT}_odoo-web-data odoo8084_odoo-db-data odoo8084_odoo-web-data 2>/dev/null || true
+    docker volume prune -f
     echo -e "${GREEN}✓ Volúmenes de datos limpiados.${NC}"
 fi
 
