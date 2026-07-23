@@ -57,6 +57,5 @@
       "name": "Ferretería",
       "is_restaurant": false
     }
-  ],
-  "pos_configs_to_remove": ["Caja Principal", "Punto de venta"]
+  ]
 }
