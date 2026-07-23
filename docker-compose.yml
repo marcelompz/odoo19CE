@@ -96,6 +96,7 @@ services:
         touch /tmp/init_completed
       "
     restart: "no"
+    auto_remove: true
 
 volumes:
   odoo-db-data:
