@@ -191,6 +191,7 @@ class ProductBatchImport(models.Model):
                     'list_price': line.list_price,
                     'standard_price': line.standard_price,
                     'type': line.product_type,
+                    'is_storable': True if line.product_type == 'consu' else False,
                     'categ_id': categ_id,
                     'tracking': line.tracking,
                     'available_in_pos': line.available_in_pos,

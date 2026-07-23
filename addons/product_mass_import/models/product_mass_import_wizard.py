@@ -456,6 +456,7 @@ class ProductMassImportWizard(models.Model):
                 'list_price': preview.list_price,
                 'standard_price': preview.standard_price,
                 'type': preview.product_type,
+                'is_storable': True if preview.product_type == 'consu' else False,
                 'categ_id': categ_id,
                 'tracking': preview.tracking,
                 'available_in_pos': preview.available_in_pos,
