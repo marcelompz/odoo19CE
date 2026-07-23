@@ -460,9 +460,6 @@ class ProductMassImportWizard(models.Model):
                 'categ_id': categ_id,
                 'tracking': preview.tracking,
                 'available_in_pos': preview.available_in_pos,
-                'uom_id': default_uom_id,
-                'uom_po_id': default_uom_id,
-                'service_tracking': 'no',
             }
 
             if preview.pos_description:
