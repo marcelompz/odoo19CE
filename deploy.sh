@@ -73,12 +73,19 @@ done
 
 PORT=${WEB_PORT:-8084}
 DB_NAME=${DB_NAME:-prod}
-EMAIL=${ADMIN_EMAIL:-soporte@crossnexion.com}
-PASS=${ADMIN_PASSWORD:-Cross1983_}
 IMPORT_PRODUCTS=${IMPORT_PRODUCTS:-false}
 IMPORT_RECIPES=${IMPORT_RECIPES:-false}
 DB_VOLS=${DB_VOLUMES:-./db-data}
 WEB_VOLS=${WEB_VOLUMES:-./web-data}
+
+# Intentar extraer credenciales del usuario 'admin' desde migracion/users.json si existe
+if [ -f "./migracion/users.json" ]; then
+    EMAIL=$(python3 -c "import json; data=json.load(open('./migracion/users.json')); print(next((u['login'] for u in data if u.get('login')=='admin'), 'admin'))" 2>/dev/null || echo "admin")
+    PASS=$(python3 -c "import json; data=json.load(open('./migracion/users.json')); print(next((u['password'] for u in data if u.get('login')=='admin'), 'admin'))" 2>/dev/null || echo "admin")
+else
+    EMAIL=${ADMIN_EMAIL:-admin}
+    PASS=${ADMIN_PASSWORD:-admin}
+fi
 
 echo -e "\n${BOLD}Configuración Dinámica:${NC}"
 echo -e "  • Limpieza DB: ${YELLOW}$CLEAN_DB${NC}"
