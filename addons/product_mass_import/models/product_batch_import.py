@@ -88,6 +88,17 @@ class ProductBatchImport(models.Model):
     company_id = fields.Many2one('res.company', string='Compañía', default=lambda self: self.env.company)
 
     @api.model
+    def default_get(self, fields_list):
+        res = super(ProductBatchImport, self).default_get(fields_list)
+        if 'location_id' in fields_list and not res.get('location_id'):
+            warehouse = self.env['stock.warehouse'].search([('company_id', '=', self.env.company.id)], limit=1)
+            if not warehouse:
+                warehouse = self.env['stock.warehouse'].search([], limit=1)
+            if warehouse and warehouse.lot_stock_id:
+                res['location_id'] = warehouse.lot_stock_id.id
+        return res
+
+    @api.model
     def create(self, vals):
         if vals.get('name', 'Nuevo') == 'Nuevo':
             vals['name'] = self.env['ir.sequence'].next_by_code('product.batch.import') or 'Nuevo'
@@ -309,8 +320,8 @@ class ProductBatchImportLine(models.Model):
 
     batch_id = fields.Many2one('product.batch.import', string='Importación en Lote', ondelete='cascade', required=True)
     sequence = fields.Integer(string='Secuencia', default=10)
-    default_code = fields.Char(string='Referencia Interna', required=True)
-    name = fields.Char(string='Nombre del Producto', required=True)
+    default_code = fields.Char(string='Referencia Interna')
+    name = fields.Char(string='Nombre del Producto')
     pos_description = fields.Char(string='Descripción para PdV')
     barcode = fields.Char(string='Código de Barras')
     available_in_pos = fields.Boolean(string='Disponible en PdV', default=True)
