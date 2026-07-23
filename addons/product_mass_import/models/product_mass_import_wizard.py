@@ -289,15 +289,14 @@ class ProductMassImportWizard(models.Model):
             standard_price = float(row[8]) if row[8] else 0.0
             qty_on_hand = float(row[9]) if row[9] else 0.0
 
-            # Product type - Odoo 19: 'product'=Almacenable, 'consu'=Consumible, 'service'=Servicio
-            product_type = 'product'  # Default a Almacenable
+            # Product type - Odoo 19: 'consu'=Bienes/Almacenable, 'service'=Servicio, 'combo'=Combo
+            product_type = 'consu'  # Default a Bienes/Almacenable
             if row[10]:
                 type_val = str(row[10]).lower()
                 if type_val in ['servicio', 'service']:
                     product_type = 'service'
-                elif type_val in ['consumible', 'consu']:
-                    product_type = 'consu'
-                # 'almacenable', 'storable', 'product' -> quedan como 'product'
+                elif type_val in ['combo']:
+                    product_type = 'combo'
 
             # Tracking
             tracking = 'none'
@@ -545,10 +544,10 @@ class ProductMassImportPreview(models.Model):
     standard_price = fields.Float(string='Precio de Costo')
     qty_on_hand = fields.Float(string='Cantidad a la Mano')
     product_type = fields.Selection([
-        ('product', 'Bienes'),
-        ('consu', 'Consumible'),
+        ('consu', 'Bienes / Almacenable'),
         ('service', 'Servicio'),
-    ], string='Tipo de Producto', default='product')
+        ('combo', 'Combo'),
+    ], string='Tipo de Producto', default='consu')
     tracking = fields.Selection([
         ('none', 'Por cantidad'),
         ('lot', 'Por Lote'),

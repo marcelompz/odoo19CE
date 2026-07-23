@@ -332,10 +332,10 @@ class ProductBatchImportLine(models.Model):
     standard_price = fields.Float(string='Precio de Costo', default=0.0)
     qty_on_hand = fields.Float(string='Cantidad a la Mano', default=0.0)
     product_type = fields.Selection([
-        ('product', 'Almacenable'),
-        ('consu', 'Consumible'),
+        ('consu', 'Bienes / Almacenable'),
         ('service', 'Servicio'),
-    ], string='Tipo de Producto', default='product')
+        ('combo', 'Combo'),
+    ], string='Tipo de Producto', default='consu')
     tracking = fields.Selection([
         ('none', 'Ninguno'),
         ('lot', 'Por Lote'),
