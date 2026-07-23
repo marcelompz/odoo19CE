@@ -63,8 +63,8 @@
                                 class="oe_stat_button" icon="fa-download"
                                 string="Descargar Plantilla"/>
                         <button name="action_parse_excel" type="object"
-                                class="oe_stat_button" icon="fa-file-excel-o"
-                                string="Cargar Archivo"/>
+                                class="oe_stat_button" icon="fa-check-square-o"
+                                string="Cargar / Validar"/>
                         <button name="action_open_recipe_import" type="object"
                                 class="oe_stat_button" icon="fa-cutlery"
                                 string="Importar Recetas"/>
