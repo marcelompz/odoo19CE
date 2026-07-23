@@ -1,4 +1,5 @@
 {
+  "company_name": "Gourmet",
   "smtp": {
     "name": "Servidor Odoo 19 CE",
     "host": "smtp.gmail.com",

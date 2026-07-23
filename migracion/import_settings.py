@@ -58,13 +58,18 @@ def import_settings():
                 print("  ✓ Activated PYG currency (Guaraní) in the system.")
             
             company = env['res.company'].browse(1)
-            if company.exists() and company.currency_id and not company.currency_id.active:
-                company.currency_id.write({'active': True})
-                print(f"  ✓ Activated company currency: {company.currency_id.name}")
+            if company.exists():
+                if company.currency_id and not company.currency_id.active:
+                    company.currency_id.write({'active': True})
+                    print(f"  ✓ Activated company currency: {company.currency_id.name}")
+                company_name = config.get('company_name')
+                if company_name and company.name != company_name:
+                    company.write({'name': company_name})
+                    print(f"  ✓ Updated Main Company name to: {company_name}")
             cr.commit()
         except Exception as e:
             cr.rollback()
-            print(f"  ⚠️ Currency configuration warning: {e}")
+            print(f"  ⚠️ Currency/Company configuration warning: {e}")
         
         # 1. Outgoing Mail Server (SMTP)
         try:
