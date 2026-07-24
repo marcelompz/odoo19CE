@@ -19,10 +19,7 @@ export PGPASSWORD="$DB_PASSWD"
 
 # Verificar módulos l10n_py (montados en el contenedor)
 echo "=== Verificando módulos l10n_py ==="
-L10N_PY_DIR="/mnt/extra-addons-l10py"
-if [ ! -d "$L10N_PY_DIR/l10n_py" ]; then
-    L10N_PY_DIR="/mnt/extra-addons-l10n"
-fi
+L10N_PY_DIR="/mnt/extra-addons-l10n"
 
 if [ -d "$L10N_PY_DIR/l10n_py" ]; then
     echo "✓ Módulos l10n_py disponibles en $L10N_PY_DIR"
@@ -98,7 +95,7 @@ odoo \
      --db_port "$DB_PORT" \
      --db_user "$DB_USER" \
      --db_password "$DB_PASSWD" \
-     --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
+     --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10n,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
      2>&1 | tail -30
 
 echo "✓ Módulos procesados e instalados con éxito"
@@ -173,7 +170,7 @@ if [ -d "$L10N_PY_DIR/l10n_py" ]; then
          --db_port "$DB_PORT" \
          --db_user "$DB_USER" \
          --db_password "$DB_PASSWD" \
-         --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
+         --addons-path=/mnt/extra-addons-customize,/mnt/extra-addons-l10n,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons \
          2>&1 | tail -20
     echo "✓ Módulos de localización Paraguay instalados"
 fi

@@ -22,7 +22,7 @@ def import_settings():
     db_user = os.environ.get('DB_USER', 'odoo')
     db_password = os.environ.get('DB_PASSWD', 'cross.159753')
     db_name = os.environ.get('DB_NAME', 'prod')
-    addons_path = os.environ.get('ADDONS_PATH', '/mnt/extra-addons-customize,/mnt/extra-addons-l10py,/usr/lib/python3/dist-packages/odoo/addons')
+    addons_path = os.environ.get('ADDONS_PATH', '/mnt/extra-addons-customize,/mnt/extra-addons-l10n,/usr/lib/python3/dist-packages/odoo/addons')
     valid_addons = [p for p in addons_path.split(',') if os.path.exists(p)]
 
     odoo.tools.config.parse_config([
