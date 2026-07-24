@@ -262,9 +262,10 @@ def import_settings():
                     pos_name = pos_data.get('name', 'Ferretería')
                     pos_config = env['pos.config'].search([('name', '=', pos_name)], limit=1)
                     if not pos_config:
-                        unnamed_pos = env['pos.config'].with_context(active_test=False).search([('name', 'in', ['Caja Principal', 'Shop', 'Main'])], limit=1)
-                        if unnamed_pos:
-                            pos_config = unnamed_pos
+                        # Buscar cualquier POS existente (incluso 'Punto de venta' o por defecto) para renombrarlo
+                        any_pos = env['pos.config'].with_context(active_test=False).search([], limit=1)
+                        if any_pos:
+                            pos_config = any_pos
                             pos_config.write({'name': pos_name, 'active': True})
                             print(f"  ✓ Renamed default POS Config to: {pos_name}")
 
